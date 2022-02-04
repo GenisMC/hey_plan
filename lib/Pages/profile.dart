@@ -5,6 +5,21 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text("Perfil"));
+    return Column(
+      children: [
+        Container(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height / 5,
+          decoration: BoxDecoration(color: Colors.grey[300]),
+          child: Row(
+            children: [
+              Image.network(
+                  "https://ps.w.org/profile-builder/assets/banner-1544x500.png"),
+              const Text("Nom Usuari")
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
