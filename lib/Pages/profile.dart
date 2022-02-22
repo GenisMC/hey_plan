@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:hey_plan/Services/singleton.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  ProfilePage({Key? key}) : super(key: key);
+
+  final Singleton s = Singleton.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -13,9 +16,8 @@ class ProfilePage extends StatelessWidget {
           decoration: BoxDecoration(color: Colors.grey[300]),
           child: Row(
             children: [
-              Image.network(
-                  "https://ps.w.org/profile-builder/assets/banner-1544x500.png"),
-              const Text("Nom Usuari")
+              Image.network("https://ps.w.org/profile-builder/assets/banner-1544x500.png"),
+              s.auth.user == null ? Container() : Text(s.auth.user!.displayName!)
             ],
           ),
         ),

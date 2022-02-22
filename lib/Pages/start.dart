@@ -3,6 +3,7 @@ import 'package:hey_plan/Pages/addplan.dart';
 import 'package:hey_plan/Pages/explore.dart';
 import 'package:hey_plan/Pages/plans.dart';
 import 'package:hey_plan/Services/fire_auth.dart';
+import 'package:hey_plan/Services/singleton.dart';
 
 class StartPage extends StatefulWidget {
   const StartPage({Key? key}) : super(key: key);
@@ -14,7 +15,7 @@ class StartPage extends StatefulWidget {
 class _StartPageState extends State<StartPage> {
   late Widget body;
   int currentIndex = 0;
-  final AuthService auth = AuthService();
+  final Singleton singleton = Singleton.instance;
 
   static const List<Widget> _pages = <Widget>[
     ExplorePage(),
@@ -36,12 +37,10 @@ class _StartPageState extends State<StartPage> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             const Text("REGISTRARSE", style: TextStyle(fontSize: 40)),
-            ElevatedButton(
-                onPressed: () {},
-                child: const Text("Con email i contrassenya")),
+            ElevatedButton(onPressed: () {}, child: const Text("Con email i contrassenya")),
             InkWell(
               onTap: () async {
-                await auth.signInWithGoogle();
+                await singleton.auth.signInWithGoogle();
               },
               child: Ink(
                 color: const Color(0xFF397AF3),
