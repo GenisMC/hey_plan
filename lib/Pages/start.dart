@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hey_plan/Pages/addplan.dart';
-import 'package:hey_plan/Pages/explore.dart';
-import 'package:hey_plan/Pages/plans.dart';
-import 'package:hey_plan/Services/fire_auth.dart';
+import 'package:hey_plan/Pages/scaffold.dart';
 import 'package:hey_plan/Services/singleton.dart';
 
 class StartPage extends StatefulWidget {
@@ -13,54 +10,47 @@ class StartPage extends StatefulWidget {
 }
 
 class _StartPageState extends State<StartPage> {
-  late Widget body;
-  int currentIndex = 0;
   final Singleton singleton = Singleton.instance;
-
-  static const List<Widget> _pages = <Widget>[
-    ExplorePage(),
-    AddPlanPage(),
-    PlansPage(),
-  ];
-
-  void onTapped(int index) {
-    setState(() {
-      currentIndex = index;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            const Text("REGISTRARSE", style: TextStyle(fontSize: 40)),
-            ElevatedButton(onPressed: () {}, child: const Text("Con email i contrassenya")),
-            InkWell(
-              onTap: () async {
-                await singleton.auth.signInWithGoogle();
-              },
-              child: Ink(
-                color: const Color(0xFF397AF3),
-                child: Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: const [
-                      Icon(Icons.android),
-                      SizedBox(width: 12),
-                      Text('Entrar con Google'),
-                    ],
-                  ),
-                ),
+    return singleton.auth.user == null
+        ? Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  const Text("REGISTRARSE", style: TextStyle(fontSize: 40)),
+                  ElevatedButton(
+                      onPressed: () {
+                        print(singleton.auth.user);
+                      },
+                      child: const Text("Con email i contraseña")),
+                  InkWell(
+                    onTap: () async {
+                      await singleton.auth.signInWithGoogle();
+                      setState(() {});
+                    },
+                    child: Ink(
+                      color: const Color(0xFF397AF3),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: const [
+                            Icon(Icons.android),
+                            SizedBox(width: 12),
+                            Text('Entrar con Google'),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                ],
               ),
-            )
-          ],
-        ),
-      ),
-    );
+            ),
+          )
+        : ScaffoldPage();
   }
 }
 

@@ -4,7 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 class AuthService {
   final FirebaseAuth auth = FirebaseAuth.instance;
 
-  late User? user;
+  User? user;
 
   AuthService() {
     FirebaseAuth.instance.userChanges().listen((User? loggedUser) {
@@ -12,21 +12,22 @@ class AuthService {
     });
   }
 
-  saveUser(User u) {
-    user = u;
-  }
-
   Future logout() async {
-    await FirebaseAuth.instance.signOut();
+    return await FirebaseAuth.instance.signOut();
   }
 
-  Future<UserCredential> signInWithGoogle() async {
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-    final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth?.accessToken,
-      idToken: googleAuth?.idToken,
-    );
-    return await FirebaseAuth.instance.signInWithCredential(credential);
+  Future<UserCredential?> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth?.accessToken,
+        idToken: googleAuth?.idToken,
+      );
+      return await FirebaseAuth.instance.signInWithCredential(credential);
+    } catch (e) {
+      //print(e.toString());
+      return null;
+    }
   }
 }
