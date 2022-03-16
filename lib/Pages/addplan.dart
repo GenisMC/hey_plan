@@ -5,6 +5,6 @@ class AddPlanPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text("Afegir Pla"));
+    return const Scaffold(body:Center(child: Text("Afegir Pla")));
   }
 }

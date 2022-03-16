@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:hey_plan/Globals/globals.dart';
 import 'package:hey_plan/Pages/explore.dart';
+import 'package:hey_plan/Pages/newuser.dart';
 import 'package:hey_plan/Pages/plans.dart';
 import 'package:hey_plan/Pages/profile.dart';
+import 'package:hey_plan/Pages/scaffold.dart';
+import 'package:hey_plan/Pages/sign-in-forms.dart';
 import 'package:hey_plan/Pages/start.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -22,11 +27,42 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Material App',
       initialRoute: '/',
+      theme: ThemeData(
+        primaryColor: const Color(backgroundColor),
+        scaffoldBackgroundColor: const Color(backgroundColor),
+        hintColor: Colors.white,
+        textSelectionTheme: const TextSelectionThemeData(cursorColor: Color(cursorColor)),
+        textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(primary: const Color(textButtonColor))),
+        elevatedButtonTheme: ElevatedButtonThemeData(style: ElevatedButton.styleFrom(primary: Colors.white,onPrimary: Colors.black)),
+        inputDecorationTheme: const InputDecorationTheme(
+          border: OutlineInputBorder(
+              borderSide: BorderSide(color: Color(inputBorderColor),width: inputBorderWidth)
+          ),
+          enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Color(inputBorderColor),width: inputBorderWidth)
+          ),
+          focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Color(inputBorderColorFocused),width: inputBorderWidth)
+          ),
+          labelStyle: TextStyle(
+              color: Colors.black,
+              fontSize: defaultFontSize,
+          ),
+          floatingLabelStyle: TextStyle(
+            color: Colors.black,
+            fontSize: defaultFontSize,
+          )
+
+        ),
+      ),
       routes: {
         '/': (context) => const StartPage(),
-        '/profile': (context) => ProfilePage(),
+        '/scaffold': (context) => const ScaffoldPage(),
+        '/profile': (context) => const ProfilePage(),
         '/plans': (context) => const PlansPage(),
         '/explore': (context) => const ExplorePage(),
+        '/newuser': (context) => const NewUserPage(),
+        '/signin': (context) => const SignInFormsPage(),
       },
       debugShowCheckedModeBanner: false,
     );

@@ -5,6 +5,6 @@ class ExplorePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text("Explorar"));
+    return const Scaffold(body:Center(child: Text("Explorar")));
   }
 }

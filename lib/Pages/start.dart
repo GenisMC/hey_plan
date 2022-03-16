@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:hey_plan/Pages/addplan.dart';
+import 'package:hey_plan/Pages/explore.dart';
+import 'package:hey_plan/Pages/plans.dart';
 import 'package:hey_plan/Pages/scaffold.dart';
 import 'package:hey_plan/Services/singleton.dart';
+import 'package:hey_plan/Globals/globals.dart';
 
 class StartPage extends StatefulWidget {
   const StartPage({Key? key}) : super(key: key);
@@ -14,8 +18,9 @@ class _StartPageState extends State<StartPage> {
 
   @override
   Widget build(BuildContext context) {
-    return singleton.auth.user == null
+    return singleton.auth.auth.currentUser == null
         ? Scaffold(
+      backgroundColor: const Color(backgroundColor),
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -23,7 +28,7 @@ class _StartPageState extends State<StartPage> {
                   const Text("REGISTRARSE", style: TextStyle(fontSize: 40)),
                   ElevatedButton(
                       onPressed: () {
-                        print(singleton.auth.user);
+                        Navigator.pushNamed(context, '/signin');
                       },
                       child: const Text("Con email i contraseña")),
                   InkWell(
@@ -50,11 +55,9 @@ class _StartPageState extends State<StartPage> {
               ),
             ),
           )
-        : ScaffoldPage();
+        : const ScaffoldPage();
   }
 }
-
-
 
 // Scaffold(
 //       body: _pages[currentIndex],
