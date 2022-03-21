@@ -35,18 +35,10 @@ class _ScaffoldPageState extends State<ScaffoldPage> {
         automaticallyImplyLeading: false,
         leading: IconButton(icon: const Icon(Icons.person),onPressed: (){
           Navigator.pushNamed(context, '/profile');
-        },),
+        }),
         title: singleton.auth.user == null
             ? Container()
             : Text(singleton.auth.user!.email!),
-        actions: [
-          IconButton(
-              onPressed: () async {
-                await singleton.auth.logout();
-                Navigator.pushReplacementNamed(context, '/');
-              },
-              icon: const Icon(Icons.logout))
-        ],
       ),
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(

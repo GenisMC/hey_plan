@@ -43,6 +43,7 @@ dependencies:
   dotted_border: ^2.0.0+2
   firebase_storage: ^10.2.9
   flutter_tags: ^0.4.9+1
+  cloud_firestore: ^3.1.10
 
 dev_dependencies:
   flutter_test:

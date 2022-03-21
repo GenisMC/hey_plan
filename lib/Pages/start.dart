@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hey_plan/Pages/addplan.dart';
 import 'package:hey_plan/Pages/explore.dart';
 import 'package:hey_plan/Pages/plans.dart';
@@ -20,38 +21,69 @@ class _StartPageState extends State<StartPage> {
   Widget build(BuildContext context) {
     return singleton.auth.auth.currentUser == null
         ? Scaffold(
-      backgroundColor: const Color(backgroundColor),
+            backgroundColor: const Color(backgroundColor),
             body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  const Text("REGISTRARSE", style: TextStyle(fontSize: 40)),
-                  ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/signin');
-                      },
-                      child: const Text("Con email i contraseña")),
-                  InkWell(
-                    onTap: () async {
-                      await singleton.auth.signInWithGoogle();
-                      setState(() {});
-                    },
-                    child: Ink(
-                      color: const Color(0xFF397AF3),
-                      child: Padding(
-                        padding: const EdgeInsets.all(6),
-                        child: Wrap(
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: const [
-                            Icon(Icons.android),
-                            SizedBox(width: 12),
-                            Text('Entrar con Google'),
-                          ],
-                        ),
-                      ),
+              child: Material(
+                elevation: 5,
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                child: Container(
+                  height: MediaQuery.of(context).size.height * 0.4,
+                  decoration: const BoxDecoration(
+                      color: Color(darkerBackgroundAccent),
+                      borderRadius: BorderRadius.all(Radius.circular(10)),),
+                  child: Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Text("REGISTRARSE",
+                            style: GoogleFonts.fredokaOne(
+                                fontSize: defaultFontSize * 2)),
+                        ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                                fixedSize: const Size(215, 55)),
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/signin');
+                            },
+                            child: FittedBox(
+                                child: Text("Con email i contraseña",
+                                    style: GoogleFonts.farro(
+                                        fontSize: defaultFontSize)))),
+                        InkWell(
+                          onTap: () async {
+                            var result = await singleton.auth.signInWithGoogle();
+                            if (result!.additionalUserInfo!.isNewUser == true) {
+                              Navigator.pushNamed(context, '/newuser');
+                            }
+                            setState(() {});
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color: const Color(0xFF397AF3),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(5)),
+                                border: Border.all(color: Colors.grey, width: 1)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Wrap(
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  const Icon(Icons.android,
+                                      size: defaultFontSize * 2),
+                                  FittedBox(
+                                    child: Text('Entrar con Google',
+                                        style: GoogleFonts.farro(
+                                            fontSize: defaultFontSize)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
                     ),
-                  )
-                ],
+                  ),
+                ),
               ),
             ),
           )

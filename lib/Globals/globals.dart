@@ -8,3 +8,4 @@ const int textButtonColor = 0xff785201;
 const int textColor = 0xff000000;
 const double inputFontSize = 17;
 const double defaultFontSize = 18;
+const int lighterBackgroundAccent = 0xfff7b320;
