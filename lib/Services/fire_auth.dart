@@ -69,7 +69,7 @@ class AuthService {
       UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: emailParam,
           password: passParam
-      );
+      ).timeout(const Duration(seconds: 30));
       return userCredential;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {

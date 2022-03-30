@@ -100,6 +100,7 @@ class _NewUserPageState extends State<NewUserPage> {
                         child: ElevatedButton(
                             onPressed: () async {
                               if(_controllerDisplayName.text != '' && _controllerDescription.text != '') {
+                                showDialog(context: context, builder: (BuildContext context) => const Dialog(child: CircularProgressIndicator()));
                                 await singleton.auth.updateDisplayName(
                                     _controllerDisplayName
                                         .text); // Add display name to user data
@@ -113,7 +114,7 @@ class _NewUserPageState extends State<NewUserPage> {
                                     _controllerDescription.text,
                                     [
                                     ]); //  Add description and tag id list to firebase database with user uid
-
+                                Navigator.pop(context);
                                 Navigator.pushNamed(context, '/scaffold');
                               }
                               else{

@@ -42,6 +42,33 @@ class _SignInFormsPageState extends State<SignInFormsPage> {
     );
   }
 
+  void register() async {
+    if (_controllerPassword.text ==
+        _controllerPasswordCheck.text) {
+      var response = await singleton.auth.registerEmail(
+          _controllerEmail.text, _controllerPassword.text);
+      if (response is String) {
+        showDialog(
+            context: context,
+            builder: (_) => responseDialog(response.toString()));
+      } else {
+        if(response != null) {
+          Navigator.pushNamed(context, '/newuser');
+        }
+        else{
+          showDialog(
+              context: context,
+              builder: (_) => responseDialog("Comprueva que el correo es valido"));
+        }
+      }
+    } else {
+      showDialog(
+          context: context,
+          builder: (_) =>
+              responseDialog("Las contraseñas no coinciden"));
+    }
+  }
+
   Widget loginForm() {
     return Scaffold(
       body: Center(
@@ -136,35 +163,15 @@ class _SignInFormsPageState extends State<SignInFormsPage> {
                   child: TextField(
                       controller: _controllerPasswordCheck,
                       obscureText: true,
+                      onSubmitted: (String s){
+                        register();
+                      },
                       decoration:
                           const InputDecoration(border: OutlineInputBorder()))),
             ),
             ElevatedButton(
-                onPressed: () async {
-                  if (_controllerPassword.text ==
-                      _controllerPasswordCheck.text) {
-                    var response = await singleton.auth.registerEmail(
-                        _controllerEmail.text, _controllerPassword.text);
-                    if (response is String) {
-                      showDialog(
-                          context: context,
-                          builder: (_) => responseDialog(response.toString()));
-                    } else {
-                      if(response != null) {
-                        Navigator.pushNamed(context, '/newuser');
-                      }
-                      else{
-                        showDialog(
-                            context: context,
-                            builder: (_) => responseDialog("Comprueva que el correo es valido"));
-                      }
-                    }
-                  } else {
-                    showDialog(
-                        context: context,
-                        builder: (_) =>
-                            responseDialog("Las contraseñas no coinciden"));
-                  }
+                onPressed: () {
+                  register();
                 },
                 child: const Text("Registrarse")),
           ],

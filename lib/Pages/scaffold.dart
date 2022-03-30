@@ -16,10 +16,10 @@ class _ScaffoldPageState extends State<ScaffoldPage> {
   final Singleton singleton = Singleton.instance;
   int _selectedIndex = 0;
 
-  List<Widget> _widgetOptions = <Widget>[
-    ExplorePage(),
-    AddPlanPage(),
-    PlansPage()
+  final List<Widget> _widgetOptions = <Widget>[
+    const ExplorePage(),
+    const AddPlanPage(),
+    const PlansPage()
   ];
 
   void _onItemTapped(int index) {
@@ -48,7 +48,10 @@ class _ScaffoldPageState extends State<ScaffoldPage> {
           BottomNavigationBarItem(icon: Icon(Icons.folder),label: 'Mis Planes')
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor:  Colors.orange,
+        selectedItemColor: const Color(accentColor),
+        elevation: 0,
+        unselectedItemColor: Colors.white,
+        backgroundColor: const Color(backgroundColor),
         onTap: _onItemTapped,
       ),
     );
