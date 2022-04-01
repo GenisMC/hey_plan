@@ -2,9 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hey_plan/Models/tag_model.dart';
 
 class FireDB {
+  /// ### [FirebaseFirestore.instance] to reference all firestore functions
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  Future addProfileData(String userUid, String desc, List<int> tags) async {
+  /// ### Add description and tag list to cloud user profile
+  ///
+  /// Requires a [String] userUID, [String] desciption and [List] [String] Taglist.
+  /// References the collection 'profiles' and inserts into the document where the
+  /// [DocId] = [userUID], the description and tag reference list.
+  Future addProfileData(String userUid, String desc, List<String> tags) async {
     CollectionReference profiles = firestore.collection('profiles');
     try {
       await profiles
@@ -22,12 +28,16 @@ class FireDB {
     }
   }
 
-  Future addTagToProfile(String userUid,List<TagModel> tags) async {
+  /// ### Adds a list of tags to the provided user's profile
+  ///
+  /// Requires a [String] userUID and a [List] [String] list of tag references.
+  /// Thes uses the collection 'profiles' to add to the list of tags of the
+  /// user.
+  Future addTagToProfile(String userUid,List<String> tags) async {
     CollectionReference profiles = firestore.collection('profiles');
     try {
-      List<String> tagIds = tags.map((e) => e.uid).toList();
       return await profiles.doc(userUid).update(
-          {'tags': FieldValue.arrayUnion(tagIds)});
+          {'tags': FieldValue.arrayUnion(tags)});
     }
     on FirebaseException catch(e){
       print(e.code);
@@ -35,13 +45,16 @@ class FireDB {
     }
   }
 
-  Future removeTagsFromProfile(String userUid, List<TagModel> tags) async {
+  /// ### Removes a list of tags from the provided user's profile
+  ///
+  /// Requires a [Strnig] userUID and a [List] [String] list of tag references.
+  /// Then uses the collection 'profiles' to remove from the list of tags the
+  /// user already has.
+  Future removeTagsFromProfile(String userUid, List<String> tags) async {
     CollectionReference profiles = firestore.collection('profiles');
-    print(tags);
     try {
-      List<String> tagIds = tags.map((e) => e.uid).toList();
       return await profiles.doc(userUid).update(
-          {'tags': FieldValue.arrayRemove(tagIds)});
+          {'tags': FieldValue.arrayRemove(tags)});
     }
     on FirebaseException catch(e){
       print(e.code);
@@ -49,6 +62,10 @@ class FireDB {
     }
   }
 
+  /// ### Gets the list of all tags and their info given a list of references
+  ///
+  /// Requires [List] [String] tag references. References the collection 'tags'
+  /// and queries the chosen tags given their UIDs.
   Future getTags(List<dynamic> tagsUids) async {
     CollectionReference tagCollection = firestore.collection('tags');
 
@@ -67,6 +84,11 @@ class FireDB {
     return tags;
   }
 
+  /// ### Updates the given user's profile description
+  ///
+  /// Given a [String] userUID and a [String] description, references the
+  /// collection 'profiles' and replaces the current description with the given
+  /// one from the given user.
   Future editDescription(String userUid, String desc) async {
     CollectionReference profiles = firestore.collection('profiles');
     try {
@@ -78,6 +100,11 @@ class FireDB {
     }
   }
 
+  /// ### Gets all of the user's profile data
+  ///
+  /// Given a [String] userUID, gets the users description and tag reference
+  /// list. In other words, all of the user information stored in the firestore
+  /// database.
   Future getProfileData(String userUid) async {
     CollectionReference profiles = firestore.collection('profiles');
 

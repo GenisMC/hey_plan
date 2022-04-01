@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hey_plan/Widgets/register_error.dart';
 import '../Globals/globals.dart';
 import '../Services/singleton.dart';
 
@@ -28,20 +29,6 @@ class _SignInFormsPageState extends State<SignInFormsPage> {
     return login ? loginForm() : registerForm();
   }
 
-  AlertDialog responseDialog(String response) {
-    return AlertDialog(
-      title: const Text("Error de registro"),
-      content: Text(response),
-      actions: [
-        TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text("Cerrar"))
-      ],
-    );
-  }
-
   void register() async {
     if (_controllerPassword.text ==
         _controllerPasswordCheck.text) {
@@ -50,7 +37,7 @@ class _SignInFormsPageState extends State<SignInFormsPage> {
       if (response is String) {
         showDialog(
             context: context,
-            builder: (_) => responseDialog(response.toString()));
+            builder: (_) => RegisterErrorDialog(response: response.toString()));
       } else {
         if(response != null) {
           Navigator.pushNamed(context, '/newuser');
@@ -58,14 +45,14 @@ class _SignInFormsPageState extends State<SignInFormsPage> {
         else{
           showDialog(
               context: context,
-              builder: (_) => responseDialog("Comprueva que el correo es valido"));
+              builder: (_) => const RegisterErrorDialog(response:"Comprueva que el correo es valido"));
         }
       }
     } else {
       showDialog(
           context: context,
           builder: (_) =>
-              responseDialog("Las contraseñas no coinciden"));
+              const RegisterErrorDialog(response:"Las contraseñas no coinciden"));
     }
   }
 
@@ -105,7 +92,7 @@ class _SignInFormsPageState extends State<SignInFormsPage> {
                   if (response is String) {
                     showDialog(
                         context: context,
-                        builder: (_) => responseDialog(response.toString()));
+                        builder: (_) => RegisterErrorDialog(response:response.toString()));
                   } else {
                     Navigator.pushNamed(context, '/scaffold');
                   }

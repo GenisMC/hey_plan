@@ -24,16 +24,17 @@ class ProfilePage extends StatefulWidget {
 
 /// Profile page state
 class _ProfilePageState extends State<ProfilePage> {
-
   /// [Singleton] instance to acces all services
   final Singleton singleton = Singleton.instance;
+
   /// [TextEditingController] for the description textbox
   final TextEditingController _controllerDesc = TextEditingController();
+
   /// [bool] Shows or hides the [FloatingActionButton] that saves the descripton text to the cloud
   bool editing = false;
+
   /// TODO: bool if any tag is selected to show delete option
   bool tagSelected = false;
-
 
   /// ### Get the logged user profile data
   ///
@@ -42,9 +43,11 @@ class _ProfilePageState extends State<ProfilePage> {
   /// and finally the tag names from the same database using the tag uids.
   Future<ProfileModel> getProfile() async {
     // Get image url from firestore
-    String imageURL = await singleton.storage.getImageUrl(singleton.auth.user!.uid);
+    String imageURL =
+        await singleton.storage.getImageUrl(singleton.auth.user!.uid);
     // Get description string and tag uid string list
-    var profileDoc = await singleton.db.getProfileData(singleton.auth.user!.uid);
+    var profileDoc =
+        await singleton.db.getProfileData(singleton.auth.user!.uid);
     // Put the description on the description textbox
     _controllerDesc.text = profileDoc['desc'];
     //  Grab the tag names with its uids
@@ -64,7 +67,8 @@ class _ProfilePageState extends State<ProfilePage> {
   /// Async function that prompts the user to pick an image file from the device
   Future uploadPhoto() async {
     // Await the user input and save the result, can be cancelled to return null
-    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image);
+    FilePickerResult? result =
+        await FilePicker.platform.pickFiles(type: FileType.image);
     // If picked file is not null
     if (result != null) {
       // Create a File object
@@ -102,7 +106,8 @@ class _ProfilePageState extends State<ProfilePage> {
               child: const Icon(Icons.save),
               onPressed: () async {
                 // Upload and replace the description written on the textbox with the currently existing one on the cloud
-                await singleton.db.editDescription(singleton.auth.user!.uid, _controllerDesc.text);
+                await singleton.db.editDescription(
+                    singleton.auth.user!.uid, _controllerDesc.text);
                 setState(() {
                   // Hide the save button
                   editing = false;
@@ -110,7 +115,7 @@ class _ProfilePageState extends State<ProfilePage> {
               })
           : Container(),
       body: FutureBuilder<ProfileModel>(
-        future: getProfile(),
+        future: getProfile().timeout(const Duration(seconds: 10)),
         builder: (BuildContext context, AsyncSnapshot<ProfileModel> snapshot) {
           // List of widgets that the future will show when finished
           List<Widget> children;
@@ -130,16 +135,7 @@ class _ProfilePageState extends State<ProfilePage> {
             }
             exitUser();
             children = <Widget>[
-              const Icon(
-                Icons.error_outline,
-                color: Colors.red,
-                size: 60,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: Text('Error: ${snapshot.error}'),
-              ),
-              exitButton(),
+              Container()
             ];
           }
           // If the result from the future still isnt correct or has an error
@@ -318,6 +314,13 @@ class _ProfilePageState extends State<ProfilePage> {
   /// removes all selected tags from the user profile on the Firebase cloud
   /// * [TODO Button] which allows for the selection of tags.
   Widget tagsPickerWidget(List<TagModel> tags) {
+    List<DropdownMenuItem<TagModel>> tagDropdownItems = tags
+        .map((e) => DropdownMenuItem(
+              child: Text(e.name),
+              value: e.uid,
+            ))
+        .cast<DropdownMenuItem<TagModel>>()
+        .toList();
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 10, 8, 10),
       child: SizedBox(
@@ -326,6 +329,15 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Stack(
           alignment: Alignment.center,
           children: [
+            Positioned(
+              top: 0,
+                left: 10,
+                child: DropdownButton<TagModel>(
+              items: tagDropdownItems,
+              onChanged: (value) {
+                print("Add tag ${value?.name} to profile");
+              },
+            )),
             tagSelected
                 ? Positioned(
                     child: TextButton(
@@ -338,6 +350,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           singleton.auth.user!.uid,
                           tags
                               .where((element) => element.active == true)
+                              .map((e) => e.uid)
                               .toList());
                       setState(() {});
                     },

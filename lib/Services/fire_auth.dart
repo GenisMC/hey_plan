@@ -25,7 +25,7 @@ class AuthService {
         accessToken: googleAuth?.accessToken,
         idToken: googleAuth?.idToken,
       );
-      return await FirebaseAuth.instance.signInWithCredential(credential);
+      return await FirebaseAuth.instance.signInWithCredential(credential).timeout(const Duration(seconds: 10));
     } catch (e) {
       //print(e.toString());
       return null;
@@ -48,7 +48,7 @@ class AuthService {
       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: emailParam,
           password: passParam
-      );
+      ).timeout(const Duration(seconds: 10));
       return userCredential;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
@@ -61,7 +61,7 @@ class AuthService {
     } catch (e) {
       print(e);
     }
-    return null;
+    return "Error de connexión";
   }
 
   Future loginWithEmail(String emailParam, String passParam) async {
@@ -69,7 +69,7 @@ class AuthService {
       UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: emailParam,
           password: passParam
-      ).timeout(const Duration(seconds: 30));
+      ).timeout(const Duration(seconds: 10));
       return userCredential;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {

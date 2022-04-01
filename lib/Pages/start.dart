@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hey_plan/Pages/addplan.dart';
-import 'package:hey_plan/Pages/explore.dart';
-import 'package:hey_plan/Pages/plans.dart';
 import 'package:hey_plan/Pages/scaffold.dart';
 import 'package:hey_plan/Services/singleton.dart';
 import 'package:hey_plan/Globals/globals.dart';
+
+import '../Widgets/register_error.dart';
 
 class StartPage extends StatefulWidget {
   const StartPage({Key? key}) : super(key: key);
@@ -52,8 +51,16 @@ class _StartPageState extends State<StartPage> {
                         InkWell(
                           onTap: () async {
                             var result = await singleton.auth.signInWithGoogle();
-                            if (result!.additionalUserInfo!.isNewUser == true) {
-                              Navigator.pushNamed(context, '/newuser');
+                            if(result != null) {
+                              if (result.additionalUserInfo!.isNewUser ==
+                                  true) {
+                                Navigator.pushNamed(context, '/newuser');
+                              }
+                            }
+                            else{
+                              showDialog(
+                                  context: context,
+                                  builder: (_) => const RegisterErrorDialog(response:"Error al iniciar el servicio de Google"));
                             }
                             setState(() {});
                           },
