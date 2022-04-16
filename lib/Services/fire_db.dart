@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hey_plan/Models/plan_model.dart';
 import 'package:hey_plan/Models/tag_model.dart';
 
 class FireDB {
@@ -15,14 +16,10 @@ class FireDB {
     try {
       await profiles
           .doc(userUid)
-          .set({
-        'desc': desc,
-        'tags': tags
-      })
+          .set({'desc': desc, 'tags': tags})
           .then((value) => print('User data added'))
           .catchError((error) => print('Error adding data: $error'));
-    }
-    on FirebaseException catch(e){
+    } on FirebaseException catch (e) {
       print(e.code);
       return null;
     }
@@ -33,13 +30,11 @@ class FireDB {
   /// Requires a [String] userUID and a [List] [String] list of tag references.
   /// Thes uses the collection 'profiles' to add to the list of tags of the
   /// user.
-  Future addTagToProfile(String userUid,List<String> tags) async {
+  Future addTagToProfile(String userUid, List<String> tags) async {
     CollectionReference profiles = firestore.collection('profiles');
     try {
-      return await profiles.doc(userUid).update(
-          {'tags': FieldValue.arrayUnion(tags)});
-    }
-    on FirebaseException catch(e){
+      return await profiles.doc(userUid).update({'tags': FieldValue.arrayUnion(tags)});
+    } on FirebaseException catch (e) {
       print(e.code);
       return null;
     }
@@ -53,10 +48,8 @@ class FireDB {
   Future removeTagsFromProfile(String userUid, List<String> tags) async {
     CollectionReference profiles = firestore.collection('profiles');
     try {
-      return await profiles.doc(userUid).update(
-          {'tags': FieldValue.arrayRemove(tags)});
-    }
-    on FirebaseException catch(e){
+      return await profiles.doc(userUid).update({'tags': FieldValue.arrayRemove(tags)});
+    } on FirebaseException catch (e) {
       print(e.code);
       return null;
     }
@@ -76,8 +69,7 @@ class FireDB {
         DocumentSnapshot doc = await tagCollection.doc(uid).get();
         tags.add(TagModel(doc.id, doc['name']));
       }
-    }
-    on FirebaseException catch(e){
+    } on FirebaseException catch (e) {
       print(e.code);
       return null;
     }
@@ -93,8 +85,7 @@ class FireDB {
     CollectionReference profiles = firestore.collection('profiles');
     try {
       return await profiles.doc(userUid).update({'desc': desc});
-    }
-    on FirebaseException catch(e){
+    } on FirebaseException catch (e) {
       print(e.code);
       return null;
     }
@@ -115,5 +106,35 @@ class FireDB {
       print('Error reading user data: $e');
       return null;
     }
+  }
+
+  /// ### Adds a plan to the plans collection
+  ///
+  /// Requires a ``List<String>`` userUIDs, ``List<String`` photoURLs, ``DateTime`` date of the pla, ``bool`` private or public
+  /// and TODO: add the rest of the fields like the location and the user list. After that it adds a new record with
+  /// a random id to the collection.
+  Future createNewPlan(List<String> userUIDs, DateTime date, List<String> photoURLs, bool private) async {
+    CollectionReference plans = firestore.collection('plans');
+
+    try {
+      return await plans.add({'photos': photoURLs, 'date': date, 'private': private});
+    } on FirebaseException catch (e) {
+      print(e.code);
+    }
+  }
+
+  /// ### TODO. Currently gets all plans in the plans collection
+  ///
+  /// Algorithm in progress
+  Future getPlans() async {
+    CollectionReference plans = firestore.collection('plans');
+
+    List<PlanModel> planList = [];
+
+    plans.get().then((plans) {
+      for (var planData in plans.docs) {
+        planList.add(PlanModel(planData.get('photos'), planData.get('date'), planData.get('private')));
+      }
+    });
   }
 }

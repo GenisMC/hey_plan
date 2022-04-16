@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:io';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tags/flutter_tags.dart';
@@ -8,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hey_plan/Models/profile_model.dart';
 import 'package:hey_plan/Pages/start.dart';
 import 'package:hey_plan/Services/singleton.dart';
+import 'package:hey_plan/Widgets/photo_picker.dart';
 import '../Globals/globals.dart';
 import '../Models/tag_model.dart';
 
@@ -60,24 +59,6 @@ class _ProfilePageState extends State<ProfilePage> {
         profileDoc['desc'],
         imageURL,
         tags);
-  }
-
-  /// ### Pick and upload image to firestore
-  ///
-  /// Async function that prompts the user to pick an image file from the device
-  Future uploadPhoto() async {
-    // Await the user input and save the result, can be cancelled to return null
-    FilePickerResult? result =
-        await FilePicker.platform.pickFiles(type: FileType.image);
-    // If picked file is not null
-    if (result != null) {
-      // Create a File object
-      File file = File(result.files.single.path!);
-      return file;
-    } else {
-      // Else return 1 ( User cancelled )
-      return 1;
-    }
   }
 
   /// ### Logout the user and navigate to start
@@ -234,35 +215,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ? SizedBox(
                         width: MediaQuery.of(context).size.width,
                         child: const CircularProgressIndicator())
-                    : GestureDetector(
-                        onTap: () async {
-                          var photo = await uploadPhoto();
-                          if (photo != 1) {
-                            await singleton.storage.uploadProfilePhoto(
-                                singleton.auth.user!.uid, photo);
-                            setState(() {});
-                          }
-                        },
-                        child: SizedBox(
-                          height: MediaQuery.of(context).size.height / 3.3,
-                          child: FittedBox(
-                            fit: BoxFit.contain,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  color: const Color(inputBorderColor),
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(999)),
-                                  border: Border.all(
-                                      color:
-                                          const Color(darkestBackroundAccent),
-                                      width: 5)),
-                              child: CircleAvatar(
-                                backgroundImage: NetworkImage(data.photoURL!),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                    : PhotoPicker(photoURL: data.photoURL!,),
                 flex: 3,
               ),
               Expanded(
@@ -335,7 +288,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: DropdownButton<TagModel>(
               items: tagDropdownItems,
               onChanged: (value) {
-                print("Add tag ${value?.name} to profile");
+                if (kDebugMode) {
+                  print("Add tag ${value?.name} to profile");
+                }
               },
             )),
             tagSelected

@@ -26,6 +26,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Material App',
       initialRoute: '/',
+      //locale: const Locale('es'),
+      //localizationsDelegates: const [
+      //  S.delegate,
+      //  GlobalMaterialLocalizations.delegate,
+      //  GlobalWidgetsLocalizations.delegate,
+      //  GlobalCupertinoLocalizations.delegate
+      //],
+      //supportedLocales: S.delegate.supportedLocales,
       theme: ThemeData(
         primaryColor: const Color(backgroundColor),
         scaffoldBackgroundColor: const Color(backgroundColor),

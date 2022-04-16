@@ -18,7 +18,7 @@ class _StartPageState extends State<StartPage> {
 
   @override
   Widget build(BuildContext context) {
-    return singleton.auth.auth.currentUser == null
+    return singleton.auth.user == null
         ? Scaffold(
             backgroundColor: const Color(backgroundColor),
             body: Center(
