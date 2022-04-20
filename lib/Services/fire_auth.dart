@@ -12,11 +12,13 @@ class AuthService {
     });
   }
 
+  /// Exit and delete current user data
   Future logout() async {
     user = null;
     return await FirebaseAuth.instance.signOut();
   }
 
+  ///
   Future<UserCredential?> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
@@ -35,20 +37,18 @@ class AuthService {
   Future updateDisplayName(String displayName) async {
     try {
       await user?.updateDisplayName(displayName);
-    } on FirebaseAuthException catch(e){
+    } on FirebaseAuthException catch (e) {
       print(e.code);
       return 1;
     }
     return 0;
   }
 
-
   Future registerEmail(String emailParam, String passParam) async {
     try {
-      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: emailParam,
-          password: passParam
-      ).timeout(const Duration(seconds: 10));
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: emailParam, password: passParam)
+          .timeout(const Duration(seconds: 10));
       return userCredential;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
@@ -66,10 +66,9 @@ class AuthService {
 
   Future loginWithEmail(String emailParam, String passParam) async {
     try {
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: emailParam,
-          password: passParam
-      ).timeout(const Duration(seconds: 10));
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: emailParam, password: passParam)
+          .timeout(const Duration(seconds: 10));
       return userCredential;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {

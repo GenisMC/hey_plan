@@ -11,6 +11,7 @@ class AddPlanPage extends StatefulWidget {
   State<AddPlanPage> createState() => _AddPlanPageState();
 }
 
+
 class _AddPlanPageState extends State<AddPlanPage> {
   final Singleton singleton = Singleton.instance;
   String? photoURL;
@@ -29,6 +30,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
 
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
@@ -69,7 +71,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
                           initialDate: DateTime.now(),
                           firstDate: DateTime.now(),
                           lastDate: DateTime.now().add(
-                            const Duration(days: 365),
+                            const Duration(days: 365),//ss
                           ),
                         );
                         date = dateResult;
