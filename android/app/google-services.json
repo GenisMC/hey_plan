@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "1026224643518",
+    "project_id": "heyplan-5e739",
+    "storage_bucket": "heyplan-5e739.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1026224643518:android:2c392df948ace8e1f72def",
+        "android_client_info": {
+          "package_name": "com.example.hey_plan"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1026224643518-k5opp6op0cncdvtngbi5jpuvui0595ee.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.hey_plan",
+            "certificate_hash": "c5ab6c61458ee4a4e1bb6d6c7109a635429e9e05"
+          }
+        },
+        {
+          "client_id": "1026224643518-ai3t39e98mq0u5ae9hc6ejlgtvva7hig.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIVHIHuTx1fQf6tHXdbltF0PkQBo34OcU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1026224643518-ai3t39e98mq0u5ae9hc6ejlgtvva7hig.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1026224643518-pv7i7uirl53a6fu8ke16lbejifqdh9to.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "og.heyplan.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
