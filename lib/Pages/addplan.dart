@@ -139,6 +139,8 @@ class _AddPlanPageState extends State<AddPlanPage> {
   
    @override
   Widget photoPicker() { 
+    return Container();
+    /*
     return GestureDetector(
       onTap: () async {
         var photo = await uploadPhoto();
@@ -184,6 +186,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
               ),
             ),
     );
+    */
   }
 
   Widget avatarWidget() {

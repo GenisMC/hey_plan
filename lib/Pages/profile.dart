@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tags/flutter_tags.dart';
@@ -6,7 +8,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hey_plan/Models/profile_model.dart';
 import 'package:hey_plan/Pages/start.dart';
 import 'package:hey_plan/Services/singleton.dart';
-import 'package:hey_plan/Widgets/photo_picker.dart';
 import '../Globals/globals.dart';
 import '../Models/tag_model.dart';
 
@@ -42,16 +43,41 @@ class _ProfilePageState extends State<ProfilePage> {
   /// and finally the tag names from the same database using the tag uids.
   Future<ProfileModel> getProfile() async {
     // Get image url from firestore
-    String imageURL = await singleton.storage.getImageUrl(singleton.auth.user!.uid);
+    String imageURL =
+        await singleton.storage.getImageUrl(singleton.auth.user!.uid);
     // Get description string and tag uid string list
-    var profileDoc = await singleton.db.getProfileData(singleton.auth.user!.uid);
+    var profileDoc =
+        await singleton.db.getProfileData(singleton.auth.user!.uid);
     // Put the description on the description textbox
     _controllerDesc.text = profileDoc['desc'];
     //  Grab the tag names with its uids
     List<TagModel> tags = await singleton.db.getTags(profileDoc['tags']);
     // Return a ProfileModel using all the information gathered and the already known user data
-    return ProfileModel(singleton.auth.user!.uid, singleton.auth.user!.displayName!, singleton.auth.user!.email!,
-        profileDoc['desc'], imageURL, tags);
+    return ProfileModel(
+        singleton.auth.user!.uid,
+        singleton.auth.user!.displayName!,
+        singleton.auth.user!.email!,
+        profileDoc['desc'],
+        imageURL,
+        tags);
+  }
+
+  /// ### Pick and upload image to firestore
+  ///
+  /// Async function that prompts the user to pick an image file from the device
+  Future uploadPhoto() async {
+    // Await the user input and save the result, can be cancelled to return null
+    FilePickerResult? result =
+        await FilePicker.platform.pickFiles(type: FileType.image);
+    // If picked file is not null
+    if (result != null) {
+      // Create a File object
+      File file = File(result.files.single.path!);
+      return file;
+    } else {
+      // Else return 1 ( User cancelled )
+      return 1;
+    }
   }
 
   /// ### Logout the user and navigate to start
@@ -80,7 +106,8 @@ class _ProfilePageState extends State<ProfilePage> {
               child: const Icon(Icons.save),
               onPressed: () async {
                 // Upload and replace the description written on the textbox with the currently existing one on the cloud
-                await singleton.db.editDescription(singleton.auth.user!.uid, _controllerDesc.text);
+                await singleton.db.editDescription(
+                    singleton.auth.user!.uid, _controllerDesc.text);
                 setState(() {
                   // Hide the save button
                   editing = false;
@@ -107,7 +134,9 @@ class _ProfilePageState extends State<ProfilePage> {
               print("Snapshot Error: ${snapshot.error}");
             }
             exitUser();
-            children = <Widget>[Container()];
+            children = <Widget>[
+              Container()
+            ];
           }
           // If the result from the future still isnt correct or has an error
           else {
@@ -155,7 +184,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   maxLines: 7,
                   expands: false,
                   autofocus: true,
-                  decoration: const InputDecoration(fillColor: Color(inputBorderColor))))
+                  decoration: const InputDecoration(
+                      fillColor: Color(inputBorderColor))))
           : GestureDetector(
               onTap: () {
                 setState(() {
@@ -189,12 +219,6 @@ class _ProfilePageState extends State<ProfilePage> {
   /// Afterward the image is uploaded to the FireStore cloud [uploadProfilePhoto], finally the widget
   /// gets reloaded to show the new image.
   Widget imageRowWidget(ProfileModel data) {
-    void getPhotoUrl(String photoURL) {
-      setState(() {
-        data.photoURL = photoURL;
-      });
-    }
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
       child: Container(
@@ -207,8 +231,38 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               Expanded(
                 child: data.photoURL == null
-                    ? SizedBox(width: MediaQuery.of(context).size.width, child: const CircularProgressIndicator())
-                    : PhotoPicker(photoURL: data.photoURL),
+                    ? SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: const CircularProgressIndicator())
+                    : GestureDetector(
+                        onTap: () async {
+                          var photo = await uploadPhoto();
+                          if (photo != 1) {
+                            await singleton.storage.uploadProfilePhoto(
+                                singleton.auth.user!.uid, photo);
+                            setState(() {});
+                          }
+                        },
+                        child: SizedBox(
+                          height: MediaQuery.of(context).size.height / 3.3,
+                          child: FittedBox(
+                            fit: BoxFit.contain,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  color: const Color(inputBorderColor),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(999)),
+                                  border: Border.all(
+                                      color:
+                                          const Color(darkestBackroundAccent),
+                                      width: 5)),
+                              child: CircleAvatar(
+                                backgroundImage: NetworkImage(data.photoURL!),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                 flex: 3,
               ),
               Expanded(
@@ -276,16 +330,14 @@ class _ProfilePageState extends State<ProfilePage> {
           alignment: Alignment.center,
           children: [
             Positioned(
-                top: 0,
+              top: 0,
                 left: 10,
                 child: DropdownButton<TagModel>(
-                  items: tagDropdownItems,
-                  onChanged: (value) {
-                    if (kDebugMode) {
-                      print("Add tag ${value?.name} to profile");
-                    }
-                  },
-                )),
+              items: tagDropdownItems,
+              onChanged: (value) {
+                print("Add tag ${value?.name} to profile");
+              },
+            )),
             tagSelected
                 ? Positioned(
                     child: TextButton(
@@ -294,8 +346,12 @@ class _ProfilePageState extends State<ProfilePage> {
                       color: Colors.red,
                     ),
                     onPressed: () async {
-                      await singleton.db.removeTagsFromProfile(singleton.auth.user!.uid,
-                          tags.where((element) => element.active == true).map((e) => e.uid).toList());
+                      await singleton.db.removeTagsFromProfile(
+                          singleton.auth.user!.uid,
+                          tags
+                              .where((element) => element.active == true)
+                              .map((e) => e.uid)
+                              .toList());
                       setState(() {});
                     },
                   ))
@@ -310,7 +366,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     index: index,
                     key: Key(index.toString()),
                     title: tag.name,
-                    textStyle: GoogleFonts.farro(fontSize: defaultFontSize * 0.8),
+                    textStyle:
+                        GoogleFonts.farro(fontSize: defaultFontSize * 0.8),
                     onPressed: (Item i) {
                       tag.active = !i.active!;
                       tags.elementAt(i.index!).active = tag.active;
