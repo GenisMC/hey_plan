@@ -1,5 +1,7 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:hey_plan/Widgets/photo_picker.dart';
+import 'package:uuid/uuid.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'dart:io';
 
 import '../Globals/globals.dart';
@@ -14,24 +16,21 @@ class AddPlanPage extends StatefulWidget {
 
 class _AddPlanPageState extends State<AddPlanPage> {
   final Singleton singleton = Singleton.instance;
-  String? photoURL;
   bool private = true;
   DateTime? date;
   TimeOfDay? time;
-
-  Future getPhotoUrl(File photo) async {
-    setState(() {
-      photoURL = photo.path;
-    });
-  }
+  List<File> photos = [];
 
   Future createPlan() async {
+    var uuid = const Uuid();
     DateTime formattedDateTime = DateTime.now();
     if (date != null && time != null) {
       formattedDateTime = DateTime(date!.year, date!.month, date!.day, time!.hour, time!.minute);
     }
-    List<String> photoURLs = [photoURL!];
-    return await singleton.db.createNewPlan([singleton.auth.user!.uid], formattedDateTime, photoURLs, private);
+    List<File> photoFiles = photos;
+    var timeUuid = uuid.v1();
+    List<String> photoURLs = await singleton.storage.uploadPlanPhotos(timeUuid, photoFiles);
+    return await singleton.db.createNewPlan(timeUuid,[singleton.auth.user!.uid], formattedDateTime, photoURLs, private);
   }
 
   @override
@@ -51,7 +50,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            const PhotoPicker(photoURL: null),
+            photoPicker(),
             ElevatedButton.icon(
                 onPressed: () {}, icon: const Icon(Icons.add_location_rounded), label: const Text("Ubicación")),
             //Date and time pickers
@@ -139,18 +138,18 @@ class _AddPlanPageState extends State<AddPlanPage> {
   
    @override
   Widget photoPicker() { 
-    return Container();
-    /*
     return GestureDetector(
       onTap: () async {
-        var photo = await uploadPhoto();
-        if (photo != 1) {
+        FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image);
+        if (result != null) {
+          //TODO: Add multiple file support
+          File photoFile = File(result.paths.first!);
           setState(() {
-            selectedPhoto = photo.path;
+            photos.add(photoFile);
           });
         }
       },
-      child: finalURL == null
+      child: photos.isEmpty
           ? DottedBorder(
               strokeWidth: 2,
               dashPattern: const [11, 11],
@@ -180,13 +179,12 @@ class _AddPlanPageState extends State<AddPlanPage> {
                       borderRadius: const BorderRadius.all(Radius.circular(999)),
                       border: Border.all(color: const Color(darkestBackroundAccent), width: 5)),
                   child: CircleAvatar(
-                    backgroundImage: NetworkImage(finalURL!),
+                    backgroundImage: FileImage(photos.first),
                   ),
                 ),
               ),
             ),
     );
-    */
   }
 
   Widget avatarWidget() {

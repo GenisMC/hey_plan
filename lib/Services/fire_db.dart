@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hey_plan/Models/plan_model.dart';
 import 'package:hey_plan/Models/tag_model.dart';
@@ -113,11 +115,11 @@ class FireDB {
   /// Requires a ``List<String>`` userUIDs, ``List<String`` photoURLs, ``DateTime`` date of the pla, ``bool`` private or public
   /// and TODO: add the rest of the fields like the location and the user list. After that it adds a new record with
   /// a random id to the collection.
-  Future createNewPlan(List<String> userUIDs, DateTime date, List<String> photoURLs, bool private) async {
+  Future createNewPlan(String docUid,List<String> userUIDs, DateTime date, List<String> photoURLs, bool private) async {
     CollectionReference plans = firestore.collection('plans');
 
     try {
-      return await plans.add({'photos': photoURLs, 'date': date, 'private': private});
+      return await plans.doc(docUid).set({'photos': photoURLs, 'date': date, 'private': private});
     } on FirebaseException catch (e) {
       print(e.code);
     }

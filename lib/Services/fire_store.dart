@@ -8,7 +8,7 @@ class FireStore {
     String? photoURL;
     try{
       //${extension(profilePhoto.path)}
-      await storage.ref("$userId/profile").putFile(profilePhoto).then((result) async {
+      await storage.ref("users/$userId/profile").putFile(profilePhoto).then((result) async {
           photoURL = await result.ref.getDownloadURL();
         });
       return photoURL;
@@ -18,13 +18,18 @@ class FireStore {
     }
   }
 
-  Future uploadPlanPhoto(String planId, File planPhoto) async {
-    String? photoURL;
+  Future uploadPlanPhotos(String planId, List<File> planPhotos) async {
+    List<String> photoURLs = [];
     try{
-        await storage.ref("$planId/photos/UID").putFile(planPhoto).then((result) async {
-            photoURL = await result.ref.getDownloadURL();
-          });
-        return photoURL;
+      for(int i = 0; i<planPhotos.length;i++) {
+        await storage.ref("plans/$planId/photos/P-$i")
+            .putFile(planPhotos[i])
+            .then((result) async {
+          String url = await result.ref.getDownloadURL();
+          photoURLs.add(url);
+        });
+      }
+      return photoURLs;
       } on FirebaseException catch(e) {
         print(e.code);
       }
@@ -33,7 +38,7 @@ class FireStore {
   Future<String> getImageUrl(String userUid) async {
     try{
       print(userUid);
-      String url = await storage.ref('$userUid/profile').getDownloadURL();
+      String url = await storage.ref('users/$userUid/profile').getDownloadURL();
       print(url);
       return url;
     }

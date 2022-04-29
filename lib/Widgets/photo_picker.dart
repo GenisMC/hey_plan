@@ -31,12 +31,8 @@ class _PhotoPickerState extends State<PhotoPicker> {
     if (result != null) {
       // Create a File object
       File file = File(result.files.single.path!);
-      String? urlResult = await singleton.storage.uploadPlanPhoto("PLAN ID", file); // TODO
-      if(urlResult != null) {
-        setState(() {
-            finalURL = urlResult;
-          });
-      }
+      //String? urlResult = await singleton.storage.uploadPlanPhoto("PLAN ID", file); // TODO
+
       return file;
     } else {
       // Else return 1 ( User cancelled )
