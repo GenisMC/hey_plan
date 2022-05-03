@@ -1,3 +1,4 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
@@ -21,17 +22,36 @@ class _AddPlanPageState extends State<AddPlanPage> {
   TimeOfDay? time;
   List<File> photos = [];
 
+  // --- FUNCTIONS --- //
+
   Future createPlan() async {
     var uuid = const Uuid();
     DateTime formattedDateTime = DateTime.now();
     if (date != null && time != null) {
       formattedDateTime = DateTime(date!.year, date!.month, date!.day, time!.hour, time!.minute);
     }
-    List<File> photoFiles = photos;
+
     var timeUuid = uuid.v1();
-    List<String> photoURLs = await singleton.storage.uploadPlanPhotos(timeUuid, photoFiles);
-    return await singleton.db.createNewPlan(timeUuid,[singleton.auth.user!.uid], formattedDateTime, photoURLs, private);
+    List<String> photoURLs = await singleton.storage.uploadPlanPhotos(timeUuid, photos);
+    return await singleton.db
+        .createNewPlan(timeUuid, [singleton.auth.user!.uid], formattedDateTime, photoURLs, private);
   }
+
+  Future pickPhotos() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true, type: FileType.image);
+      if (result != null) {
+        for (var path in result.paths) {
+          photos.add(File(path!));
+        }
+        setState(() {});
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  // --- WIDGETS --- //
 
   @override
   Widget build(BuildContext context) {
@@ -135,56 +155,102 @@ class _AddPlanPageState extends State<AddPlanPage> {
       ),
     );
   }
-  
-   @override
-  Widget photoPicker() { 
+
+  @override
+  Widget photoPicker() {
     return GestureDetector(
-      onTap: () async {
-        FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image);
-        if (result != null) {
-          //TODO: Add multiple file support
-          File photoFile = File(result.paths.first!);
-          setState(() {
-            photos.add(photoFile);
-          });
-        }
-      },
-      child: photos.isEmpty
-          ? DottedBorder(
-              strokeWidth: 2,
-              dashPattern: const [11, 11],
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.5,
-                height: MediaQuery.of(context).size.width * 0.5,
-                child: Center(
-                  child: SizedBox(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Text("Subir foto", style: TextStyle(fontSize: defaultFontSize, color: Color(textButtonColor))),
-                        Icon(Icons.add_a_photo, size: defaultFontSize * 1.5, color: Color(textButtonColor))
-                      ],
+        onTap: () async {
+          await pickPhotos();
+        },
+        child: photos.isEmpty
+            ? DottedBorder(
+                strokeWidth: 2,
+                dashPattern: const [11, 11],
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.5,
+                  height: MediaQuery.of(context).size.width * 0.5,
+                  child: Center(
+                    child: SizedBox(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Text("Subir foto",
+                              style: TextStyle(fontSize: defaultFontSize, color: Color(textButtonColor))),
+                          Icon(Icons.add_a_photo, size: defaultFontSize * 1.5, color: Color(textButtonColor))
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            )
-          : SizedBox(
-              height: MediaQuery.of(context).size.height / 3.3,
-              child: FittedBox(
-                fit: BoxFit.contain,
-                child: Container(
-                  decoration: BoxDecoration(
-                      color: const Color(inputBorderColor),
-                      borderRadius: const BorderRadius.all(Radius.circular(999)),
-                      border: Border.all(color: const Color(darkestBackroundAccent), width: 5)),
-                  child: CircleAvatar(
-                    backgroundImage: FileImage(photos.first),
-                  ),
-                ),
-              ),
-            ),
-    );
+              )
+            : Stack(
+                alignment: Alignment.center,
+                children: [
+                  CarouselSlider(
+                      items: photos.map((e) {
+                        return Builder(
+                          builder: (BuildContext context) {
+                            return GestureDetector(
+                              onTap: () async {
+                                //await pickPhotos();
+                              },
+                              onLongPress: () async {
+                                await showGeneralDialog(
+                                  context: context,
+                                  barrierDismissible: true,
+                                  barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+                                  barrierColor: Colors.transparent,
+                                  pageBuilder: (BuildContext context, Animation<double> animation,
+                                      Animation<double> secondaryAnimation) {
+                                    return Dialog(
+                                      elevation: 5,
+                                      child: Container(
+                                        decoration: const BoxDecoration(
+                                            color: Colors.white, borderRadius: BorderRadius.all(Radius.circular(100))),
+                                        width: MediaQuery.of(context).size.width / 2,
+                                        height: MediaQuery.of(context).size.height / 10,
+                                        child: Row(
+                                          children: [
+                                            TextButton.icon(
+                                                onPressed: () async {
+                                                  await pickPhotos();
+                                                },
+                                                label: const Text("Añadir foto"),
+                                                icon: const Icon(Icons.add, size: 30)),
+                                            TextButton.icon(
+                                                onPressed: () {},
+                                                label: const Text("Eliminar foto"),
+                                                icon: const Icon(Icons.delete, size: 30)),
+                                          ],
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                              child: SizedBox(
+                                height: MediaQuery.of(context).size.height / 3.3,
+                                child: FittedBox(
+                                  fit: BoxFit.contain,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        color: const Color(inputBorderColor),
+                                        borderRadius: const BorderRadius.all(Radius.circular(999)),
+                                        border: Border.all(color: const Color(darkestBackroundAccent), width: 5)),
+                                    child: CircleAvatar(
+                                      backgroundImage: FileImage(e),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      }).toList(),
+                      options: CarouselOptions(height: MediaQuery.of(context).size.height / 3.3)),
+                ],
+              ));
   }
 
   Widget avatarWidget() {
@@ -194,3 +260,20 @@ class _AddPlanPageState extends State<AddPlanPage> {
     );
   }
 }
+
+/*
+SizedBox(
+height: MediaQuery.of(context).size.height / 3.3,
+child: FittedBox(
+fit: BoxFit.contain,
+child: Container(
+decoration: BoxDecoration(
+color: const Color(inputBorderColor),
+borderRadius: const BorderRadius.all(Radius.circular(999)),
+border: Border.all(color: const Color(darkestBackroundAccent), width: 5)),
+child: CircleAvatar(
+backgroundImage: FileImage(photos.first),
+),
+),
+),
+),*/
