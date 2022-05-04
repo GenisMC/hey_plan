@@ -17,8 +17,6 @@ class _ScaffoldPageState extends State<ScaffoldPage> {
   PageController pageController = PageController();
   int _selectedIndex = 0;
 
-  final List<Widget> _widgetOptions = <Widget>[const ExplorePage(), const AddPlanPage(), const PlansPage()];
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;

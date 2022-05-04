@@ -17,6 +17,7 @@ class AddPlanPage extends StatefulWidget {
 
 class _AddPlanPageState extends State<AddPlanPage> {
   final Singleton singleton = Singleton.instance;
+  final TextEditingController _controllerTitlePlan = TextEditingController();
   bool private = true;
   DateTime? date;
   TimeOfDay? time;
@@ -33,8 +34,19 @@ class _AddPlanPageState extends State<AddPlanPage> {
 
     var timeUuid = uuid.v1();
     List<String> photoURLs = await singleton.storage.uploadPlanPhotos(timeUuid, photos);
-    return await singleton.db
-        .createNewPlan(timeUuid, [singleton.auth.user!.uid], formattedDateTime, photoURLs, private);
+    if (_controllerTitlePlan.text != "") {
+      return await singleton.db.createNewPlan(
+          _controllerTitlePlan.text, timeUuid, [singleton.auth.user!.uid], formattedDateTime, photoURLs, private);
+    }
+  }
+
+  void resetValues() {
+    _controllerTitlePlan.text = "";
+    photos = [];
+    date = null;
+    time = null;
+    private = true;
+    setState(() {});
   }
 
   Future pickPhotos() async {
@@ -58,7 +70,19 @@ class _AddPlanPageState extends State<AddPlanPage> {
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return Center(
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width / 2,
+                    height: MediaQuery.of(context).size.width / 2,
+                    child: const CircularProgressIndicator(),
+                  ),
+                );
+              });
           var result = await createPlan();
+          resetValues();
           print(result);
         },
         label: const Text("Crear"),
@@ -71,8 +95,15 @@ class _AddPlanPageState extends State<AddPlanPage> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             photoPicker(),
-            ElevatedButton.icon(
-                onPressed: () {}, icon: const Icon(Icons.add_location_rounded), label: const Text("Ubicación")),
+            SizedBox(
+              width: MediaQuery.of(context).size.width / 1.25,
+              child: TextField(
+                controller: _controllerTitlePlan,
+                textAlign: TextAlign.center,
+                autofocus: false,
+              ),
+            ),
+            //ElevatedButton.icon(onPressed: () {}, icon: const Icon(Icons.add_location_rounded), label: const Text("Ubicación")),
             //Date and time pickers
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -156,101 +187,132 @@ class _AddPlanPageState extends State<AddPlanPage> {
     );
   }
 
+  Widget customDialog(File item) {
+    const padding = 16.0;
+    const avatarRadius = 33.0;
+    return Dialog(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      backgroundColor: Colors.transparent,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.only(top: padding, left: padding, bottom: padding + avatarRadius, right: padding),
+            margin: const EdgeInsets.only(bottom: avatarRadius),
+            decoration:
+                const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.all(Radius.circular(padding))),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                TextButton(
+                    onPressed: () async {
+                      await pickPhotos();
+                      Navigator.pop(context);
+                    },
+                    child: const Text("Añadir foto", style: TextStyle(fontSize: defaultFontSize))),
+                TextButton(
+                  onPressed: () {
+                    photos.remove(item);
+                    setState(() {});
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Eliminar foto", style: TextStyle(fontSize: defaultFontSize)),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            right: padding,
+            left: padding,
+            bottom: 0,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pop(context);
+              },
+              child: const CircleAvatar(
+                  backgroundColor: Color(accentColor),
+                  radius: avatarRadius,
+                  child: Icon(
+                    Icons.close,
+                    size: 30,
+                    color: Colors.black,
+                  )),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget photoPicker() {
-    return GestureDetector(
-        onTap: () async {
-          await pickPhotos();
-        },
-        child: photos.isEmpty
-            ? DottedBorder(
-                strokeWidth: 2,
-                dashPattern: const [11, 11],
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.5,
-                  height: MediaQuery.of(context).size.width * 0.5,
-                  child: Center(
-                    child: SizedBox(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Text("Subir foto",
-                              style: TextStyle(fontSize: defaultFontSize, color: Color(textButtonColor))),
-                          Icon(Icons.add_a_photo, size: defaultFontSize * 1.5, color: Color(textButtonColor))
-                        ],
-                      ),
+    return photos.isEmpty
+        ? GestureDetector(
+            onTap: () async {
+              await pickPhotos();
+            },
+            child: DottedBorder(
+              strokeWidth: 2,
+              dashPattern: const [11, 11],
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.5,
+                height: MediaQuery.of(context).size.width * 0.5,
+                child: Center(
+                  child: SizedBox(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Text("Subir foto", style: TextStyle(fontSize: defaultFontSize, color: Color(textButtonColor))),
+                        Icon(Icons.add_a_photo, size: defaultFontSize * 1.5, color: Color(textButtonColor))
+                      ],
                     ),
                   ),
                 ),
-              )
-            : Stack(
-                alignment: Alignment.center,
-                children: [
-                  CarouselSlider(
-                      items: photos.map((e) {
-                        return Builder(
-                          builder: (BuildContext context) {
-                            return GestureDetector(
-                              onTap: () async {
-                                //await pickPhotos();
-                              },
-                              onLongPress: () async {
-                                await showGeneralDialog(
-                                  context: context,
-                                  barrierDismissible: true,
-                                  barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-                                  barrierColor: Colors.transparent,
-                                  pageBuilder: (BuildContext context, Animation<double> animation,
-                                      Animation<double> secondaryAnimation) {
-                                    return Dialog(
-                                      elevation: 5,
-                                      child: Container(
-                                        decoration: const BoxDecoration(
-                                            color: Colors.white, borderRadius: BorderRadius.all(Radius.circular(100))),
-                                        width: MediaQuery.of(context).size.width / 2,
-                                        height: MediaQuery.of(context).size.height / 10,
-                                        child: Row(
-                                          children: [
-                                            TextButton.icon(
-                                                onPressed: () async {
-                                                  await pickPhotos();
-                                                },
-                                                label: const Text("Añadir foto"),
-                                                icon: const Icon(Icons.add, size: 30)),
-                                            TextButton.icon(
-                                                onPressed: () {},
-                                                label: const Text("Eliminar foto"),
-                                                icon: const Icon(Icons.delete, size: 30)),
-                                          ],
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                );
-                              },
-                              child: SizedBox(
-                                height: MediaQuery.of(context).size.height / 3.3,
-                                child: FittedBox(
-                                  fit: BoxFit.contain,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                        color: const Color(inputBorderColor),
-                                        borderRadius: const BorderRadius.all(Radius.circular(999)),
-                                        border: Border.all(color: const Color(darkestBackroundAccent), width: 5)),
-                                    child: CircleAvatar(
-                                      backgroundImage: FileImage(e),
-                                    ),
-                                  ),
-                                ),
-                              ),
+              ),
+            ),
+          )
+        : Stack(
+            alignment: Alignment.center,
+            children: [
+              CarouselSlider(
+                  items: photos.map((e) {
+                    return Builder(
+                      builder: (BuildContext context) {
+                        return GestureDetector(
+                          onLongPress: () async {
+                            await showDialog(
+                              context: context,
+                              barrierDismissible: true,
+                              barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+                              barrierColor: Colors.transparent,
+                              builder: (BuildContext context) => customDialog(e),
                             );
                           },
+                          child: SizedBox(
+                            height: MediaQuery.of(context).size.height / 3.3,
+                            child: FittedBox(
+                              fit: BoxFit.contain,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    color: const Color(inputBorderColor),
+                                    borderRadius: const BorderRadius.all(Radius.circular(999)),
+                                    border: Border.all(color: const Color(darkestBackroundAccent), width: 5)),
+                                child: CircleAvatar(
+                                  backgroundImage: FileImage(e),
+                                ),
+                              ),
+                            ),
+                          ),
                         );
-                      }).toList(),
-                      options: CarouselOptions(height: MediaQuery.of(context).size.height / 3.3)),
-                ],
-              ));
+                      },
+                    );
+                  }).toList(),
+                  options: CarouselOptions(height: MediaQuery.of(context).size.height / 3.3)),
+            ],
+          );
   }
 
   Widget avatarWidget() {
@@ -260,20 +322,3 @@ class _AddPlanPageState extends State<AddPlanPage> {
     );
   }
 }
-
-/*
-SizedBox(
-height: MediaQuery.of(context).size.height / 3.3,
-child: FittedBox(
-fit: BoxFit.contain,
-child: Container(
-decoration: BoxDecoration(
-color: const Color(inputBorderColor),
-borderRadius: const BorderRadius.all(Radius.circular(999)),
-border: Border.all(color: const Color(darkestBackroundAccent), width: 5)),
-child: CircleAvatar(
-backgroundImage: FileImage(photos.first),
-),
-),
-),
-),*/

@@ -1,6 +1,7 @@
 class PlanModel {
+  String title;
   DateTime date;
-  List<String> photoURLs;
+  List<dynamic> photoURLs;
   bool private;
-  PlanModel(this.date,this.photoURLs,this.private);
+  PlanModel(this.title, this.date, this.photoURLs, this.private);
 }

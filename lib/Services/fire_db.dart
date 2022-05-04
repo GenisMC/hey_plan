@@ -115,11 +115,12 @@ class FireDB {
   /// Requires a ``List<String>`` userUIDs, ``List<String`` photoURLs, ``DateTime`` date of the pla, ``bool`` private or public
   /// and TODO: add the rest of the fields like the location and the user list. After that it adds a new record with
   /// a random id to the collection.
-  Future createNewPlan(String docUid,List<String> userUIDs, DateTime date, List<String> photoURLs, bool private) async {
+  Future createNewPlan(
+      String title, String docUid, List<String> userUIDs, DateTime date, List<String> photoURLs, bool private) async {
     CollectionReference plans = firestore.collection('plans');
 
     try {
-      return await plans.doc(docUid).set({'photos': photoURLs, 'date': date, 'private': private});
+      return await plans.doc(docUid).set({'title': title, 'photos': photoURLs, 'date': date, 'private': private});
     } on FirebaseException catch (e) {
       print(e.code);
     }
@@ -133,10 +134,13 @@ class FireDB {
 
     List<PlanModel> planList = [];
 
-    plans.get().then((plans) {
+    await plans.get().then((plans) {
       for (var planData in plans.docs) {
-        planList.add(PlanModel(planData.get('photos'), planData.get('date'), planData.get('private')));
+        planList.add(PlanModel(
+            planData.get('title'), planData.get('date').toDate(), planData.get('photos'), planData.get('private')));
       }
     });
+
+    return planList;
   }
 }
