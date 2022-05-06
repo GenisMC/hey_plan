@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hey_plan/Models/plan_model.dart';
 import 'package:hey_plan/Models/tag_model.dart';
@@ -120,7 +118,9 @@ class FireDB {
     CollectionReference plans = firestore.collection('plans');
 
     try {
-      return await plans.doc(docUid).set({'title': title, 'photos': photoURLs, 'date': date, 'private': private});
+      return await plans
+          .doc(docUid)
+          .set({'users': userUIDs, 'title': title, 'photos': photoURLs, 'date': date, 'private': private});
     } on FirebaseException catch (e) {
       print(e.code);
     }
@@ -129,18 +129,29 @@ class FireDB {
   /// ### TODO. Currently gets all plans in the plans collection
   ///
   /// Algorithm in progress
-  Future getPlans() async {
-    CollectionReference plans = firestore.collection('plans');
-
+  Future getUserPlans(String userUID) async {
     List<PlanModel> planList = [];
 
-    await plans.get().then((plans) {
+    await firestore.collection('plans').where("users", arrayContains: userUID).get().then((plans) {
       for (var planData in plans.docs) {
-        planList.add(PlanModel(
-            planData.get('title'), planData.get('date').toDate(), planData.get('photos'), planData.get('private')));
+        planList.add(PlanModel(planData.id, planData.get('title'), planData.get('date').toDate(),
+            planData.get('photos'), planData.get('users'), planData.get('private')));
       }
     });
 
     return planList;
+  }
+
+  Future removeUserFromPLan(String docId, String userUID) async {
+    CollectionReference plans = firestore.collection('plans');
+    await plans.doc(docId).update({
+      'users': FieldValue.arrayRemove([userUID])
+    });
+    await plans.doc(docId).get().then((docSnapshot) async {
+      if (docSnapshot.get('users') == []) {
+        await plans.doc(docId).delete();
+      }
+    });
+    return true;
   }
 }

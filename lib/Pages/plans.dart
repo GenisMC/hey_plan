@@ -14,7 +14,7 @@ class PlansPage extends StatefulWidget {
 class _PlansPageState extends State<PlansPage> {
   final Singleton singleton = Singleton.instance;
   Future getPlansDB() async {
-    return await singleton.db.getPlans();
+    return await singleton.db.getUserPlans(singleton.auth.user!.uid);
   }
 
   @override
@@ -41,16 +41,18 @@ class _PlansPageState extends State<PlansPage> {
             return ListView.builder(
               itemBuilder: (BuildContext context, index) {
                 return ListTile(
-                  title: SizedBox(
-                    height: MediaQuery.of(context).size.height / 3,
-                    child: GestureDetector(
-                      onLongPress: () {
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return customDialog();
-                            });
-                      },
+                  title: GestureDetector(
+                    onLongPress: () async {
+                      await showDialog(
+                        context: context,
+                        barrierDismissible: true,
+                        barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+                        barrierColor: Colors.transparent,
+                        builder: (BuildContext context) => customDialog(plans[index]),
+                      );
+                    },
+                    child: SizedBox(
+                      height: MediaQuery.of(context).size.height / 3,
                       child: Card(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16.0),
@@ -83,7 +85,7 @@ class _PlansPageState extends State<PlansPage> {
     );
   }
 
-  Widget customDialog() {
+  Widget customDialog(PlanModel plan) {
     const padding = 16.0;
     const avatarRadius = 33.0;
     return Dialog(
@@ -98,21 +100,27 @@ class _PlansPageState extends State<PlansPage> {
           Container(
             padding: const EdgeInsets.only(top: padding, left: padding, bottom: padding + avatarRadius, right: padding),
             margin: const EdgeInsets.only(bottom: avatarRadius),
-            decoration:
-                const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.all(Radius.circular(padding))),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: const Color(accentColor), width: 2),
+                borderRadius: const BorderRadius.all(Radius.circular(padding))),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                TextButton(
-                    onPressed: () async {
-                      Navigator.pop(context);
-                    },
-                    child: const Text("Añadir foto", style: TextStyle(fontSize: defaultFontSize))),
-                TextButton(
-                  onPressed: () {
+                const Icon(
+                  Icons.warning,
+                  color: Colors.red,
+                  size: 40,
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    bool value = await singleton.db.removeUserFromPLan(plan.docID, singleton.auth.user!.uid);
+                    setState(() {});
                     Navigator.pop(context);
                   },
-                  child: const Text("Eliminar foto", style: TextStyle(fontSize: defaultFontSize)),
+                  style: ElevatedButton.styleFrom(primary: Colors.grey[200], elevation: 5),
+                  child: const Text("Salir del plan",
+                      style: TextStyle(fontSize: defaultFontSize, color: Colors.red, fontWeight: FontWeight.bold)),
                 ),
               ],
             ),

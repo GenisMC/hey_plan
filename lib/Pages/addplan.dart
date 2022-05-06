@@ -68,6 +68,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      //resizeToAvoidBottomInset: false,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           showDialog(
@@ -83,6 +84,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
               });
           var result = await createPlan();
           resetValues();
+          Navigator.pop(context);
           print(result);
         },
         label: const Text("Crear"),
@@ -91,97 +93,108 @@ class _AddPlanPageState extends State<AddPlanPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: SizedBox(
         height: MediaQuery.of(context).size.height * 0.7,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            photoPicker(),
-            SizedBox(
-              width: MediaQuery.of(context).size.width / 1.25,
-              child: TextField(
-                controller: _controllerTitlePlan,
-                textAlign: TextAlign.center,
-                autofocus: false,
-              ),
+        child: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: MediaQuery.of(context).size.width,
+              minHeight: MediaQuery.of(context).size.height * 0.7,
             ),
-            //ElevatedButton.icon(onPressed: () {}, icon: const Icon(Icons.add_location_rounded), label: const Text("Ubicación")),
-            //Date and time pickers
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton.icon(
-                      onPressed: () async {
-                        var dateResult = await showDatePicker(
-                          context: context,
-                          builder: (context, child) {
-                            return Theme(
-                              child: child!,
-                              data: Theme.of(context).copyWith(
-                                  colorScheme: const ColorScheme.light(
-                                primary: Color(accentColor),
-                              )),
-                            );
-                          },
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(
-                            const Duration(days: 365), //ss
-                          ),
-                        );
-                        date = dateResult;
-                        print(dateResult);
-                      },
-                      icon: const Icon(Icons.calendar_today),
-                      label: const Text("Dia")),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton.icon(
-                      onPressed: () async {
-                        var timeResult = await showTimePicker(
-                          context: context,
-                          initialTime: TimeOfDay.now(),
-                          builder: (context, child) {
-                            return Theme(
-                              child: child!,
-                              data: Theme.of(context).copyWith(
-                                  colorScheme: const ColorScheme.light(
-                                primary: Color(accentColor),
-                              )),
-                            );
-                          },
-                        );
-                        time = timeResult;
-                        print(timeResult);
-                      },
-                      icon: const Icon(Icons.calendar_today),
-                      label: const Text("Hora")),
-                ),
-              ],
-            ),
-            // People in the plan as circle avatars
-            SizedBox(
-              width: MediaQuery.of(context).size.width * 0.75,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+            child: IntrinsicHeight(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  avatarWidget(),
-                  avatarWidget(),
-                  avatarWidget(),
-                  avatarWidget(),
+                  photoPicker(),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width / 1.25,
+                    child: TextField(
+                      controller: _controllerTitlePlan,
+                      textAlign: TextAlign.center,
+                      autofocus: false,
+                    ),
+                  ),
+                  //ElevatedButton.icon(onPressed: () {}, icon: const Icon(Icons.add_location_rounded), label: const Text("Ubicación")),
+                  //Date and time pickers
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ElevatedButton.icon(
+                            onPressed: () async {
+                              var dateResult = await showDatePicker(
+                                context: context,
+                                builder: (context, child) {
+                                  return Theme(
+                                    child: child!,
+                                    data: Theme.of(context).copyWith(
+                                        colorScheme: const ColorScheme.light(
+                                      primary: Color(accentColor),
+                                    )),
+                                  );
+                                },
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime.now(),
+                                lastDate: DateTime.now().add(
+                                  const Duration(days: 365), //ss
+                                ),
+                              );
+                              date = dateResult;
+                              print(dateResult);
+                            },
+                            icon: const Icon(Icons.calendar_today),
+                            label: const Text("Dia")),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ElevatedButton.icon(
+                            onPressed: () async {
+                              var timeResult = await showTimePicker(
+                                context: context,
+                                initialTime: TimeOfDay.now(),
+                                builder: (context, child) {
+                                  return Theme(
+                                    child: child!,
+                                    data: Theme.of(context).copyWith(
+                                        colorScheme: const ColorScheme.light(
+                                      primary: Color(accentColor),
+                                    )),
+                                  );
+                                },
+                              );
+                              time = timeResult;
+                              print(timeResult);
+                            },
+                            icon: const Icon(Icons.calendar_today),
+                            label: const Text("Hora")),
+                      ),
+                    ],
+                  ),
+                  // People in the plan as circle avatars
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.75,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        avatarWidget(),
+                        avatarWidget(),
+                        avatarWidget(),
+                        avatarWidget(),
+                      ],
+                    ),
+                  ),
+                  // Privacy switch for the plan
+                  Switch(
+                      value: private,
+                      onChanged: (a) {
+                        setState(() {
+                          private = a;
+                        });
+                      })
                 ],
               ),
             ),
-            // Privacy switch for the plan
-            Switch(
-                value: private,
-                onChanged: (a) {
-                  setState(() {
-                    private = a;
-                  });
-                })
-          ],
+          ),
         ),
       ),
     );
@@ -296,14 +309,11 @@ class _AddPlanPageState extends State<AddPlanPage> {
                             child: FittedBox(
                               fit: BoxFit.contain,
                               child: Container(
-                                decoration: BoxDecoration(
-                                    color: const Color(inputBorderColor),
-                                    borderRadius: const BorderRadius.all(Radius.circular(999)),
-                                    border: Border.all(color: const Color(darkestBackroundAccent), width: 5)),
-                                child: CircleAvatar(
-                                  backgroundImage: FileImage(e),
-                                ),
-                              ),
+                                  decoration: BoxDecoration(
+                                      color: const Color(inputBorderColor),
+                                      borderRadius: const BorderRadius.all(Radius.circular(16)),
+                                      border: Border.all(color: const Color(darkestBackroundAccent), width: 5)),
+                                  child: Image.file(e, fit: BoxFit.cover)),
                             ),
                           ),
                         );
