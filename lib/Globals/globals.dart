@@ -17,3 +17,5 @@ const int textColor = 0xff000000;
 const int cursorColor = 0xff000000;
 const double inputFontSize = 17;
 const double defaultFontSize = 18;
+// Padding
+const int padding = 16;

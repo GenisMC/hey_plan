@@ -63,19 +63,28 @@ class _SignInFormsPageState extends State<SignInFormsPage> {
             TextButton(
                 onPressed: () {
                   setState(() {
-                     pageController.animateToPage(1, duration: const Duration(milliseconds: 500), curve: Curves.ease);
+                    pageController.animateToPage(1, duration: const Duration(milliseconds: 500), curve: Curves.ease);
                   });
                 },
                 child: const Text("Registrarse")),
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-              child: SizedBox(width: getTextBoxWidth(context), child: TextField(controller: _controllerEmail)),
+              child: SizedBox(
+                  width: getTextBoxWidth(context),
+                  child: TextField(
+                    controller: _controllerEmail,
+                    decoration: const InputDecoration(hintText: 'Correo'),
+                  )),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
               child: SizedBox(
-                  width: getTextBoxWidth(context),
-                  child: TextField(controller: _controllerPassword, obscureText: true)),
+                width: getTextBoxWidth(context),
+                child: TextField(
+                    controller: _controllerPassword,
+                    obscureText: true,
+                    decoration: const InputDecoration(hintText: 'Contraseña')),
+              ),
             ),
             ElevatedButton(
                 onPressed: () async {
@@ -103,7 +112,7 @@ class _SignInFormsPageState extends State<SignInFormsPage> {
             TextButton(
                 onPressed: () {
                   setState(() {
-                     pageController.animateToPage(0, duration: const Duration(milliseconds: 500), curve: Curves.ease);
+                    pageController.animateToPage(0, duration: const Duration(milliseconds: 500), curve: Curves.ease);
                   });
                 },
                 child: Text(
@@ -115,7 +124,8 @@ class _SignInFormsPageState extends State<SignInFormsPage> {
               child: SizedBox(
                 width: getTextBoxWidth(context),
                 child: TextField(
-                    controller: _controllerEmail, decoration: const InputDecoration(border: OutlineInputBorder())),
+                    controller: _controllerEmail,
+                    decoration: const InputDecoration(border: OutlineInputBorder(), hintText: 'Correo')),
               ),
             ),
             Padding(
@@ -125,7 +135,7 @@ class _SignInFormsPageState extends State<SignInFormsPage> {
                   child: TextField(
                       controller: _controllerPassword,
                       obscureText: true,
-                      decoration: const InputDecoration(border: OutlineInputBorder()))),
+                      decoration: const InputDecoration(border: OutlineInputBorder(), hintText: 'Contraseña'))),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
@@ -137,7 +147,7 @@ class _SignInFormsPageState extends State<SignInFormsPage> {
                       onSubmitted: (String s) {
                         register();
                       },
-                      decoration: const InputDecoration(border: OutlineInputBorder()))),
+                      decoration: const InputDecoration(border: OutlineInputBorder(), hintText: 'Repetir Contraseña'))),
             ),
             ElevatedButton(
                 onPressed: () {

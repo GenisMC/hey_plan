@@ -12,12 +12,12 @@ class FireDB {
   /// Requires a [String] userUID, [String] desciption and [List] [String] Taglist.
   /// References the collection 'profiles' and inserts into the document where the
   /// [DocId] = [userUID], the description and tag reference list.
-  Future addProfileData(String userUid, String desc, List<String> tags) async {
+  Future addProfileData(String surname, int age, String name, String userUid, String desc, List<String> tags) async {
     CollectionReference profiles = firestore.collection('profiles');
     try {
       await profiles
           .doc(userUid)
-          .set({'desc': desc, 'tags': tags})
+          .set({'name': name, 'surname': surname, 'age': age, 'desc': desc, 'tags': tags})
           .then((value) => print('User data added'))
           .catchError((error) => print('Error adding data: $error'));
     } on FirebaseException catch (e) {
