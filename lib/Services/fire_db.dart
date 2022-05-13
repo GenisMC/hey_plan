@@ -146,6 +146,7 @@ class FireDB {
   Future removeUserFromPLan(String docId, String userUID) async {
     CollectionReference plans = firestore.collection('plans');
     Function eq = const ListEquality().equals;
+
     var docRef = await plans.doc(docId).get().then((docSnapshot) async {
       if (eq(docSnapshot.get('users'), [userUID])) {
         await plans.doc(docId).delete();
@@ -153,11 +154,8 @@ class FireDB {
         await plans.doc(docId).update({
           'users': FieldValue.arrayRemove([userUID])
         });
-        print("else");
       }
     });
-    print("----------------------------------------------------------------------------");
-    print(docRef);
     return true;
   }
 }
