@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 import 'package:hey_plan/Models/plan_model.dart';
 import 'package:hey_plan/Models/tag_model.dart';
 
@@ -144,14 +145,19 @@ class FireDB {
 
   Future removeUserFromPLan(String docId, String userUID) async {
     CollectionReference plans = firestore.collection('plans');
-    await plans.doc(docId).update({
-      'users': FieldValue.arrayRemove([userUID])
-    });
-    await plans.doc(docId).get().then((docSnapshot) async {
-      if (docSnapshot.get('users') == []) {
+    Function eq = const ListEquality().equals;
+    var docRef = await plans.doc(docId).get().then((docSnapshot) async {
+      if (eq(docSnapshot.get('users'), [userUID])) {
         await plans.doc(docId).delete();
+      } else {
+        await plans.doc(docId).update({
+          'users': FieldValue.arrayRemove([userUID])
+        });
+        print("else");
       }
     });
+    print("----------------------------------------------------------------------------");
+    print(docRef);
     return true;
   }
 }
