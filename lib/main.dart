@@ -42,27 +42,22 @@ class MyApp extends StatelessWidget {
         hintColor: Colors.white,
         textSelectionTheme: const TextSelectionThemeData(cursorColor: Color(cursorColor)),
         textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(primary: const Color(textButtonColor))),
-        elevatedButtonTheme: ElevatedButtonThemeData(style: ElevatedButton.styleFrom(primary: Colors.white,onPrimary: Colors.black)),
+        elevatedButtonTheme:
+            ElevatedButtonThemeData(style: ElevatedButton.styleFrom(primary: Colors.white, onPrimary: Colors.black)),
         inputDecorationTheme: const InputDecorationTheme(
-          border: OutlineInputBorder(
-              borderSide: BorderSide(color: Color(inputBorderColor),width: inputBorderWidth)
-          ),
-          enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Color(inputBorderColor),width: inputBorderWidth)
-          ),
-          focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Color(inputBorderColorFocused),width: inputBorderWidth)
-          ),
-          labelStyle: TextStyle(
+            border: OutlineInputBorder(borderSide: BorderSide(color: Color(inputBorderColor), width: inputBorderWidth)),
+            enabledBorder:
+                OutlineInputBorder(borderSide: BorderSide(color: Color(inputBorderColor), width: inputBorderWidth)),
+            focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Color(inputBorderColorFocused), width: inputBorderWidth)),
+            labelStyle: TextStyle(
               color: Colors.black,
               fontSize: defaultFontSize,
-          ),
-          floatingLabelStyle: TextStyle(
-            color: Colors.black,
-            fontSize: defaultFontSize,
-          )
-
-        ),
+            ),
+            floatingLabelStyle: TextStyle(
+              color: Colors.black,
+              fontSize: defaultFontSize,
+            )),
       ),
       routes: {
         '/': (context) => const StartPage(),
