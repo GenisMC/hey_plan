@@ -34,9 +34,7 @@ class FireStore {
 
   Future<String> getImageUrl(String userUid) async {
     try {
-      print(userUid);
       String url = await storage.ref('users/$userUid/profile').getDownloadURL();
-      print(url);
       return url;
     } on FirebaseException catch (e) {
       print(e.code);

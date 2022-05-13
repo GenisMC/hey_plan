@@ -37,6 +37,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   List<TagModel> allTags = [];
 
+  /// tag indexes for deletion on selected
+  List<TagModel> tagSelectedForDelete = [];
+
   /// [bool] Shows or hides the [FloatingActionButton] that saves the descripton text to the cloud
   bool editing = false;
   bool loading = false;
@@ -353,7 +356,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     setState(() {});
                   },
                 )),
-            tagSelected
+            tagSelectedForDelete.isNotEmpty
                 ? Positioned(
                     child: TextButton(
                     child: const Icon(
@@ -361,8 +364,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       color: Colors.red,
                     ),
                     onPressed: () async {
-                      await singleton.db.removeTagsFromProfile(singleton.auth.user!.uid,
-                          tags.where((element) => element.active == true).map((e) => e.uid).toList());
+                      await singleton.db.removeTagsFromProfile(
+                          singleton.auth.user!.uid, tagSelectedForDelete.map((e) => e.uid).toList());
+                      tagSelectedForDelete.clear();
                       setState(() {});
                     },
                   ))
@@ -373,20 +377,17 @@ class _ProfilePageState extends State<ProfilePage> {
                 itemCount: tags.length,
                 itemBuilder: (int index) {
                   final tag = tags[index];
-                  print(tag);
                   return ItemTags(
                     index: index,
                     key: Key(index.toString()),
                     title: tag.name,
                     textStyle: GoogleFonts.farro(fontSize: defaultFontSize * 0.8),
                     onPressed: (i) {
-                      tag.active = !i.active!;
-                      tags.elementAt(i.index!).active = tag.active;
-                      tagSelected = false;
-                      for (var element in tags) {
-                        if (element.active) {
-                          tagSelected = true;
-                        }
+                      TagModel clickedTag = tags[i.index!];
+                      if (tagSelectedForDelete.any((tag) => tag.uid == clickedTag.uid)) {
+                        tagSelectedForDelete.removeWhere((tag) => tag.uid == clickedTag.uid);
+                      } else {
+                        tagSelectedForDelete.add(clickedTag);
                       }
                       setState(() {});
                     },
