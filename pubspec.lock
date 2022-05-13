@@ -207,13 +207,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.5"
-  flutter_tags:
+  flutter_tags_x:
     dependency: "direct main"
     description:
-      name: flutter_tags
+      name: flutter_tags_x
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0-nullsafety.1"
+    version: "1.0.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter

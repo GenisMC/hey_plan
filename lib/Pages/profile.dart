@@ -4,7 +4,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_tags/flutter_tags.dart';
+import 'package:flutter_tags_x/flutter_tags_x.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hey_plan/Models/profile_model.dart';
 import 'package:hey_plan/Pages/start.dart';
@@ -35,6 +35,8 @@ class _ProfilePageState extends State<ProfilePage> {
   /// [TextEditingController] for the description textbox
   final TextEditingController _controllerDesc = TextEditingController();
 
+  List<TagModel> allTags = [];
+
   /// [bool] Shows or hides the [FloatingActionButton] that saves the descripton text to the cloud
   bool editing = false;
   bool loading = false;
@@ -55,7 +57,8 @@ class _ProfilePageState extends State<ProfilePage> {
     // Put the description on the description textbox
     _controllerDesc.text = profileDoc['desc'];
     //  Grab the tag names with its uids
-    List<TagModel> tags = await singleton.db.getTags(profileDoc['tags']);
+    List<TagModel> tags = await singleton.db.getProfileTags(profileDoc['tags']);
+    allTags = await singleton.db.getTags();
 
     if (loading) {
       loading = false;
@@ -322,13 +325,16 @@ class _ProfilePageState extends State<ProfilePage> {
   /// removes all selected tags from the user profile on the Firebase cloud
   /// * [TODO Button] which allows for the selection of tags.
   Widget tagsPickerWidget(List<TagModel> tags) {
-    List<DropdownMenuItem<TagModel>> tagDropdownItems = tags
-        .map((e) => DropdownMenuItem(
-              child: Text(e.name),
-              value: e.uid,
-            ))
-        .cast<DropdownMenuItem<TagModel>>()
-        .toList();
+    List<DropdownMenuItem<TagModel>> tagDropdownItems = [];
+    if (allTags != []) {
+      tagDropdownItems = allTags
+          .map((e) => DropdownMenuItem<TagModel>(
+                child: Text(e.name),
+                value: e,
+              ))
+          .cast<DropdownMenuItem<TagModel>>()
+          .toList();
+    }
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 10, 8, 10),
       child: SizedBox(
@@ -343,7 +349,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: DropdownButton<TagModel>(
                   items: tagDropdownItems,
                   onChanged: (value) {
-                    print("Add tag ${value?.name} to profile");
+                    singleton.db.addTagToProfile(singleton.auth.user!.uid, [value!.uid]);
+                    setState(() {});
                   },
                 )),
             tagSelected
@@ -366,12 +373,13 @@ class _ProfilePageState extends State<ProfilePage> {
                 itemCount: tags.length,
                 itemBuilder: (int index) {
                   final tag = tags[index];
+                  print(tag);
                   return ItemTags(
                     index: index,
                     key: Key(index.toString()),
                     title: tag.name,
                     textStyle: GoogleFonts.farro(fontSize: defaultFontSize * 0.8),
-                    onPressed: (Item i) {
+                    onPressed: (i) {
                       tag.active = !i.active!;
                       tags.elementAt(i.index!).active = tag.active;
                       tagSelected = false;

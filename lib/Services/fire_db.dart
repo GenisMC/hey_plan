@@ -60,7 +60,7 @@ class FireDB {
   ///
   /// Requires [List] [String] tag references. References the collection 'tags'
   /// and queries the chosen tags given their UIDs.
-  Future getTags(List<dynamic> tagsUids) async {
+  Future getProfileTags(List<dynamic> tagsUids) async {
     CollectionReference tagCollection = firestore.collection('tags');
 
     List<TagModel> tags = [];
@@ -74,6 +74,20 @@ class FireDB {
       print(e.code);
       return null;
     }
+    return tags;
+  }
+
+  Future getTags() async {
+    CollectionReference tagCollection = firestore.collection('tags');
+
+    List<TagModel> tags = [];
+
+    var snapshot = await tagCollection.get();
+
+    snapshot.docs.forEach((document) {
+      tags.add(TagModel(document.id, document.get('name')));
+    });
+
     return tags;
   }
 

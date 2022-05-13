@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_tags/flutter_tags.dart';
+import 'package:flutter_tags_x/flutter_tags_x.dart';
 import 'package:hey_plan/Globals/globals.dart';
 import 'package:hey_plan/Widgets/loading_widget.dart';
 import 'package:numberpicker/numberpicker.dart';
