@@ -12,6 +12,7 @@ import 'package:hey_plan/Services/singleton.dart';
 import '../Globals/globals.dart';
 import '../Models/tag_model.dart';
 import '../Widgets/loading_widget.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
 
 /// ### Profile page widget starting with a Scaffold
 ///
@@ -328,16 +329,8 @@ class _ProfilePageState extends State<ProfilePage> {
   /// removes all selected tags from the user profile on the Firebase cloud
   /// * [TODO Button] which allows for the selection of tags.
   Widget tagsPickerWidget(List<TagModel> tags) {
-    List<DropdownMenuItem<TagModel>> tagDropdownItems = [];
-    if (allTags != []) {
-      tagDropdownItems = allTags
-          .map((e) => DropdownMenuItem<TagModel>(
-                child: Text(e.name),
-                value: e,
-              ))
-          .cast<DropdownMenuItem<TagModel>>()
-          .toList();
-    }
+    List<MultiSelectItem<TagModel?>> tagDropdownItems =
+        allTags.map((e) => MultiSelectItem<TagModel?>(e, e.name)).toList();
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 10, 8, 10),
       child: SizedBox(
@@ -349,13 +342,17 @@ class _ProfilePageState extends State<ProfilePage> {
             Positioned(
                 top: 0,
                 left: 10,
-                child: DropdownButton<TagModel>(
-                  items: tagDropdownItems,
-                  onChanged: (value) {
-                    singleton.db.addTagToProfile(singleton.auth.user!.uid, [value!.uid]);
-                    setState(() {});
-                  },
-                )),
+                child: MultiSelectBottomSheetField(
+                    items: tagDropdownItems,
+                    listType: MultiSelectListType.CHIP,
+                    onConfirm: (o) {
+                      List<TagModel?> select = o as List<TagModel?>;
+                      if (select != []) {
+                        singleton.db.addTagToProfile(singleton.auth.user!.uid, select.map((e) => e!.uid).toList());
+                      }
+                      o.clear();
+                      setState(() {});
+                    })),
             tagSelectedForDelete.isNotEmpty
                 ? Positioned(
                     child: TextButton(
@@ -379,7 +376,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   final tag = tags[index];
                   return ItemTags(
                     index: index,
-                    key: Key(index.toString()),
+                    //key: Key(index.toString()),
                     title: tag.name,
                     textStyle: GoogleFonts.farro(fontSize: defaultFontSize * 0.8),
                     onPressed: (i) {
