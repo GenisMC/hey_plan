@@ -44,6 +44,10 @@ class _TagPickerState extends State<TagPicker> {
     setState(() {});
   }
 
+  Color tagColor(TagModel? tag) {
+    return const Color(accentColor);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -51,49 +55,49 @@ class _TagPickerState extends State<TagPicker> {
       child: SizedBox(
         height: MediaQuery.of(context).size.height * 0.25,
         width: MediaQuery.of(context).size.width * 0.8,
-        child: Stack(
-          alignment: Alignment.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Positioned(
-                top: 0,
-                left: 10,
-                child: MultiSelectBottomSheetField(
-                    items: tagDropdownItems,
-                    listType: MultiSelectListType.CHIP,
-                    onConfirm: (o) {
-                      widget.onConfirmTagSelect(o);
-                      o.clear();
-                    })),
+            MultiSelectBottomSheetField(
+                items: tagDropdownItems,
+                buttonText: const Text("Añadir gustos", style: TextStyle(fontSize: defaultFontSize - 2)),
+                searchable: true,
+                backgroundColor: const Color(darkerAccentColor),
+                buttonIcon: const Icon(Icons.add),
+                selectedColor: const Color(accentColor),
+                selectedItemsTextStyle: const TextStyle(color: Colors.black87),
+                confirmText: const Text("Añadir", style: TextStyle(fontSize: defaultFontSize, color: Colors.black)),
+                cancelText: const Text("Cancelar", style: TextStyle(fontSize: defaultFontSize, color: Colors.black)),
+                title: const Text("Gustos", style: TextStyle(fontSize: defaultFontSize * 1.3)),
+                listType: MultiSelectListType.CHIP,
+                onConfirm: (o) {
+                  widget.onConfirmTagSelect(o);
+                  o.clear();
+                }),
             tagSelectedForDelete.isNotEmpty
-                ? Positioned(
-                    child: TextButton(
-                    child: const Icon(
-                      Icons.close,
-                      color: Colors.red,
-                    ),
+                ? ElevatedButton.icon(
+                    icon: const Icon(Icons.close, color: Colors.red),
+                    label: const Text("Eliminar selección", style: TextStyle(fontSize: defaultFontSize)),
                     onPressed: () async {
                       await widget.onDeleteTagPress(tagSelectedForDelete);
                       tagSelectedForDelete.clear();
                     },
-                  ))
+                  )
                 : Container(),
-            Positioned(
-              bottom: 0,
-              child: Tags(
-                itemCount: widget.profileTags.length,
-                itemBuilder: (int index) {
-                  final tag = widget.profileTags[index];
-                  return ItemTags(
-                    index: index,
-                    //key: Key(index.toString()),
-                    title: tag.name,
-                    textStyle: GoogleFonts.farro(fontSize: defaultFontSize * 0.8),
-                    onPressed: (i) {
-                      tagSelected(i);
-                    },
-                  );
-                },
-              ),
+            Tags(
+              itemCount: widget.profileTags.length,
+              itemBuilder: (int index) {
+                final tag = widget.profileTags[index];
+                return ItemTags(
+                  index: index,
+                  //key: Key(index.toString()),
+                  title: tag.name,
+                  textStyle: GoogleFonts.farro(fontSize: defaultFontSize * 0.8),
+                  onPressed: (i) {
+                    tagSelected(i);
+                  },
+                );
+              },
             ),
           ],
         ),

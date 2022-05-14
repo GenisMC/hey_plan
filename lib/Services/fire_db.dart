@@ -82,10 +82,10 @@ class FireDB {
 
     List<TagModel> tags = [];
 
-    var snapshot = await tagCollection.get();
-
-    snapshot.docs.forEach((document) {
-      tags.add(TagModel(document.id, document.get('name')));
+    await tagCollection.get().then((value) {
+      value.docs.forEach((document) {
+        tags.add(TagModel(document.id, document.get('name')));
+      });
     });
 
     return tags;
