@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hey_plan/Models/profile_model.dart';
 import 'package:hey_plan/Pages/start.dart';
 import 'package:hey_plan/Services/singleton.dart';
+import 'package:hey_plan/Widgets/tag_picker.dart';
 import '../Globals/globals.dart';
 import '../Models/tag_model.dart';
 import '../Widgets/loading_widget.dart';
@@ -44,9 +45,6 @@ class _ProfilePageState extends State<ProfilePage> {
   /// [bool] Shows or hides the [FloatingActionButton] that saves the descripton text to the cloud
   bool editing = false;
   bool loading = false;
-
-  /// TODO: bool if any tag is selected to show delete option
-  bool tagSelected = false;
 
   /// ### Get the logged user profile data
   ///
@@ -89,6 +87,19 @@ class _ProfilePageState extends State<ProfilePage> {
       // Else return 1 ( User cancelled )
       return 1;
     }
+  }
+
+  void onConfirmTagSelect(o) {
+    List<TagModel?> select = o as List<TagModel?>;
+    if (select != []) {
+      singleton.db.addTagToProfile(singleton.auth.user!.uid, select.map((e) => e!.uid).toList());
+    }
+    setState(() {});
+  }
+
+  Future onDeleteTagPress(List<TagModel> tagsSelected) async {
+    await singleton.db.removeTagsFromProfile(singleton.auth.user!.uid, tagsSelected.map((e) => e.uid).toList());
+    setState(() {});
   }
 
   /// ### Logout the user and navigate to start
@@ -134,7 +145,11 @@ class _ProfilePageState extends State<ProfilePage> {
             children = <Widget>[
               imageRowWidget(snapshot.data!),
               descriptionWidget(snapshot.data!.description),
-              tagsPickerWidget(snapshot.data!.tags),
+              TagPicker(
+                  profileTags: snapshot.data!.tags,
+                  tags: allTags,
+                  onConfirmTagSelect: onConfirmTagSelect,
+                  onDeleteTagPress: onDeleteTagPress),
               exitButton(),
             ];
           }
@@ -316,84 +331,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 textStyle: GoogleFonts.farro(fontSize: defaultFontSize)),
             label: const Text("Salir"),
             icon: const Icon(Icons.logout)),
-      ),
-    );
-  }
-
-  /// ### Tag picker with display and removal
-  ///
-  /// There are 3 parts to this widget:
-  /// * [Tags] contains the users tags and displays its names as multiple bubbles
-  /// on the screen
-  /// * [TextButton] which only shows after selecting at least one tag, on pressed
-  /// removes all selected tags from the user profile on the Firebase cloud
-  /// * [TODO Button] which allows for the selection of tags.
-  Widget tagsPickerWidget(List<TagModel> tags) {
-    List<MultiSelectItem<TagModel?>> tagDropdownItems =
-        allTags.map((e) => MultiSelectItem<TagModel?>(e, e.name)).toList();
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 10, 8, 10),
-      child: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.25,
-        width: MediaQuery.of(context).size.width * 0.8,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Positioned(
-                top: 0,
-                left: 10,
-                child: MultiSelectBottomSheetField(
-                    items: tagDropdownItems,
-                    listType: MultiSelectListType.CHIP,
-                    onConfirm: (o) {
-                      List<TagModel?> select = o as List<TagModel?>;
-                      if (select != []) {
-                        singleton.db.addTagToProfile(singleton.auth.user!.uid, select.map((e) => e!.uid).toList());
-                      }
-                      o.clear();
-                      setState(() {});
-                    })),
-            tagSelectedForDelete.isNotEmpty
-                ? Positioned(
-                    child: TextButton(
-                    child: const Icon(
-                      Icons.close,
-                      color: Colors.red,
-                    ),
-                    onPressed: () async {
-                      await singleton.db.removeTagsFromProfile(
-                          singleton.auth.user!.uid, tagSelectedForDelete.map((e) => e.uid).toList());
-                      tagSelectedForDelete.clear();
-                      setState(() {});
-                    },
-                  ))
-                : Container(),
-            Positioned(
-              bottom: 0,
-              child: Tags(
-                itemCount: tags.length,
-                itemBuilder: (int index) {
-                  final tag = tags[index];
-                  return ItemTags(
-                    index: index,
-                    //key: Key(index.toString()),
-                    title: tag.name,
-                    textStyle: GoogleFonts.farro(fontSize: defaultFontSize * 0.8),
-                    onPressed: (i) {
-                      TagModel clickedTag = tags[i.index!];
-                      if (tagSelectedForDelete.any((tag) => tag.uid == clickedTag.uid)) {
-                        tagSelectedForDelete.removeWhere((tag) => tag.uid == clickedTag.uid);
-                      } else {
-                        tagSelectedForDelete.add(clickedTag);
-                      }
-                      setState(() {});
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
