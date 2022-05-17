@@ -42,9 +42,11 @@ class FireStore {
     }
   }
 
-  Future deletePlanImages(String planUID) async {
+  Future deletePlanImages(String planUID, int photoLength) async {
     try {
-      await storage.ref('plans/$planUID').delete();
+      for (var i = 0; i < photoLength; i++) {
+        await storage.ref('plans/$planUID/photos/P-$i').delete();
+      }
     } on FirebaseException catch (e) {
       print(e.code);
       return 1;

@@ -116,7 +116,7 @@ class _PlansPageState extends State<PlansPage> {
                   onPressed: () async {
                     int value = await singleton.db.removeUserFromPLan(plan.docID, singleton.auth.user!.uid);
                     if (value == 1) {
-                      await singleton.storage.deletePlanImages(plan.docID);
+                      await singleton.storage.deletePlanImages(plan.docID, plan.photoURLs.length);
                     }
                     setState(() {});
                     Navigator.pop(context);
