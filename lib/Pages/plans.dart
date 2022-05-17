@@ -28,7 +28,7 @@ class _PlansPageState extends State<PlansPage> {
             return const SizedBox(
               child: Center(
                   child: Text(
-                "Loading...",
+                "Cargando...",
                 style: TextStyle(fontSize: defaultFontSize),
               )),
             );
