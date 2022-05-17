@@ -27,6 +27,7 @@ class _ScaffoldPageState extends State<ScaffoldPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         leading: IconButton(
@@ -56,6 +57,8 @@ class _ScaffoldPageState extends State<ScaffoldPage> {
         selectedItemColor: const Color(accentColor),
         elevation: 0,
         unselectedItemColor: Colors.white,
+        selectedFontSize: defaultFontSize - 2,
+        unselectedFontSize: defaultFontSize - 4,
         backgroundColor: const Color(backgroundColor),
         onTap: _onItemTapped,
       ),

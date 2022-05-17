@@ -36,7 +36,7 @@ class _SignInFormsPageState extends State<SignInFormsPage> {
 
   void register() async {
     if (_controllerPassword.text == _controllerPasswordCheck.text) {
-      var response = await singleton.auth.registerEmail(_controllerEmail.text, _controllerPassword.text);
+      var response = await singleton.auth.registerEmail(_controllerEmail.text.trim(), _controllerPassword.text.trim());
       if (response is String) {
         showDialog(context: context, builder: (_) => RegisterErrorDialog(response: response.toString()));
       } else {
@@ -88,7 +88,8 @@ class _SignInFormsPageState extends State<SignInFormsPage> {
             ),
             ElevatedButton(
                 onPressed: () async {
-                  var response = await singleton.auth.loginWithEmail(_controllerEmail.text, _controllerPassword.text);
+                  var response = await singleton.auth
+                      .loginWithEmail(_controllerEmail.text.trim(), _controllerPassword.text.trim());
                   if (response is String) {
                     showDialog(context: context, builder: (_) => RegisterErrorDialog(response: response.toString()));
                   } else {

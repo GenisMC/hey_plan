@@ -41,4 +41,13 @@ class FireStore {
       return '';
     }
   }
+
+  Future deletePlanImages(String planUID) async {
+    try {
+      await storage.ref('plans/$planUID').delete();
+    } on FirebaseException catch (e) {
+      print(e.code);
+      return 1;
+    }
+  }
 }

@@ -114,7 +114,10 @@ class _PlansPageState extends State<PlansPage> {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    bool value = await singleton.db.removeUserFromPLan(plan.docID, singleton.auth.user!.uid);
+                    int value = await singleton.db.removeUserFromPLan(plan.docID, singleton.auth.user!.uid);
+                    if (value == 1) {
+                      await singleton.storage.deletePlanImages(plan.docID);
+                    }
                     setState(() {});
                     Navigator.pop(context);
                   },

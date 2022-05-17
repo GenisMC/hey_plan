@@ -52,54 +52,61 @@ class _TagPickerState extends State<TagPicker> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 10, 8, 10),
-      child: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.25,
+      child: Container(
         width: MediaQuery.of(context).size.width * 0.8,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            MultiSelectBottomSheetField(
-                items: tagDropdownItems,
-                buttonText: const Text("Añadir gustos", style: TextStyle(fontSize: defaultFontSize - 2)),
-                searchable: true,
-                backgroundColor: const Color(darkerAccentColor),
-                buttonIcon: const Icon(Icons.add),
-                selectedColor: const Color(accentColor),
-                selectedItemsTextStyle: const TextStyle(color: Colors.black87),
-                confirmText: const Text("Añadir", style: TextStyle(fontSize: defaultFontSize, color: Colors.black)),
-                cancelText: const Text("Cancelar", style: TextStyle(fontSize: defaultFontSize, color: Colors.black)),
-                title: const Text("Gustos", style: TextStyle(fontSize: defaultFontSize * 1.3)),
-                listType: MultiSelectListType.CHIP,
-                onConfirm: (o) {
-                  widget.onConfirmTagSelect(o);
-                  o.clear();
-                }),
-            tagSelectedForDelete.isNotEmpty
-                ? ElevatedButton.icon(
-                    icon: const Icon(Icons.close, color: Colors.red),
-                    label: const Text("Eliminar selección", style: TextStyle(fontSize: defaultFontSize)),
-                    onPressed: () async {
-                      await widget.onDeleteTagPress(tagSelectedForDelete);
-                      tagSelectedForDelete.clear();
-                    },
-                  )
-                : Container(),
-            Tags(
-              itemCount: widget.profileTags.length,
-              itemBuilder: (int index) {
-                final tag = widget.profileTags[index];
-                return ItemTags(
-                  index: index,
-                  //key: Key(index.toString()),
-                  title: tag.name,
-                  textStyle: GoogleFonts.farro(fontSize: defaultFontSize * 0.8),
-                  onPressed: (i) {
-                    tagSelected(i);
+        decoration:
+            const BoxDecoration(color: Color(backgroundColor), borderRadius: BorderRadius.all(Radius.circular(20))),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              MultiSelectBottomSheetField(
+                  items: tagDropdownItems,
+                  buttonText: const Text("Añadir tags", style: TextStyle(fontSize: defaultFontSize - 2)),
+                  searchable: true,
+                  backgroundColor: const Color(darkerAccentColor),
+                  buttonIcon: const Icon(Icons.add),
+                  selectedColor: const Color(accentColor),
+                  selectedItemsTextStyle: const TextStyle(color: Colors.black87),
+                  confirmText: const Text("Añadir", style: TextStyle(fontSize: defaultFontSize, color: Colors.black)),
+                  cancelText: const Text("Cancelar", style: TextStyle(fontSize: defaultFontSize, color: Colors.black)),
+                  title: const Text("Gustos", style: TextStyle(fontSize: defaultFontSize * 1.3)),
+                  listType: MultiSelectListType.CHIP,
+                  onConfirm: (o) {
+                    widget.onConfirmTagSelect(o);
+                    o.clear();
+                  }),
+              tagSelectedForDelete.isNotEmpty
+                  ? ElevatedButton.icon(
+                      icon: const Icon(Icons.close, color: Colors.red),
+                      label: const Text("Eliminar selección", style: TextStyle(fontSize: defaultFontSize)),
+                      onPressed: () async {
+                        await widget.onDeleteTagPress(tagSelectedForDelete);
+                        tagSelectedForDelete.clear();
+                      },
+                    )
+                  : Container(),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                child: Tags(
+                  itemCount: widget.profileTags.length,
+                  itemBuilder: (int index) {
+                    final tag = widget.profileTags[index];
+                    return ItemTags(
+                      index: index,
+                      key: Key(index.toString()),
+                      title: tag.name,
+                      textStyle: GoogleFonts.farro(fontSize: defaultFontSize * 0.8),
+                      onPressed: (i) {
+                        tagSelected(i);
+                      },
+                    );
                   },
-                );
-              },
-            ),
-          ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

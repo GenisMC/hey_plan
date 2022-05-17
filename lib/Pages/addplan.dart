@@ -1,9 +1,13 @@
+import 'dart:math';
+
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hey_plan/Models/profile_model.dart';
 import 'package:hey_plan/Models/tag_model.dart';
+import 'package:hey_plan/Widgets/custom_dialog.dart';
 import 'package:hey_plan/Widgets/tag_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:dotted_border/dotted_border.dart';
@@ -22,27 +26,44 @@ class AddPlanPage extends StatefulWidget {
 class _AddPlanPageState extends State<AddPlanPage> {
   final Singleton singleton = Singleton.instance;
   final TextEditingController _controllerTitlePlan = TextEditingController();
+  final CustomDialog cd = CustomDialog();
+  final ScrollController _scrollController = ScrollController();
   bool private = true;
+  bool atBottom = false;
   DateTime? date;
   TimeOfDay? time;
   List<File> photos = [];
   late List<TagModel> tags = [];
 
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      if (_scrollController.hasClients) {
+        if (_scrollController.position.atEdge) {
+          if (_scrollController.position.pixels != 0) {
+            setState(() {
+              atBottom = true;
+            });
+          }
+        } else {
+          setState(() {
+            atBottom = false;
+          });
+        }
+      }
+    });
+  }
   // --- FUNCTIONS --- //
 
   Future createPlan() async {
     var uuid = const Uuid();
-    DateTime formattedDateTime = DateTime.now();
-    if (date != null && time != null) {
-      formattedDateTime = DateTime(date!.year, date!.month, date!.day, time!.hour, time!.minute);
-    }
-
+    DateTime formattedDateTime = DateTime(date!.year, date!.month, date!.day, time!.hour, time!.minute);
     var timeUuid = uuid.v1();
     List<String> photoURLs = await singleton.storage.uploadPlanPhotos(timeUuid, photos);
-    if (_controllerTitlePlan.text != "") {
-      return await singleton.db.createNewPlan(
-          _controllerTitlePlan.text, timeUuid, [singleton.auth.user!.uid], formattedDateTime, photoURLs, private);
-    }
+    List<String> tagUIDs = tags.map((e) => e.uid).toList();
+    return await singleton.db.createNewPlan(_controllerTitlePlan.text, timeUuid, [singleton.auth.user!.uid],
+        formattedDateTime, photoURLs, tagUIDs, private);
   }
 
   Future<List<TagModel>> getTags() async {
@@ -53,6 +74,7 @@ class _AddPlanPageState extends State<AddPlanPage> {
   void resetValues() {
     _controllerTitlePlan.text = "";
     photos = [];
+    tags = [];
     date = null;
     time = null;
     private = true;
@@ -96,29 +118,63 @@ class _AddPlanPageState extends State<AddPlanPage> {
 
   @override
   Widget build(BuildContext context) {
+    String dateString = "Sin seleccionar";
+    String timeString = "Sin seleccionar";
+    if (date != null) {
+      String month = date!.month.toString();
+      if (date!.month < 10) {
+        month = "0" + month;
+      }
+      dateString = date!.day.toString() + " - " + month + " - " + date!.year.toString();
+    }
+    if (time != null) {
+      timeString = time!.hour.toString() + ":" + time!.minute.toString() + " h";
+    }
     return Scaffold(
-      //resizeToAvoidBottomInset: false,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return Center(
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width / 2,
-                    height: MediaQuery.of(context).size.width / 2,
-                    child: const CircularProgressIndicator(),
-                  ),
-                );
-              });
-          var result = await createPlan();
-          resetValues();
-          Navigator.pop(context);
-          print(result);
-        },
-        label: const Text("Crear"),
-        icon: const Icon(Icons.add),
-      ),
+      resizeToAvoidBottomInset: false,
+      floatingActionButton: atBottom
+          ? FloatingActionButton.extended(
+              backgroundColor: const Color(accentColor),
+              onPressed: () async {
+                if (_controllerTitlePlan.text == "") {
+                  cd.showCustomDialog(context, "Plan sin título");
+                } else if (photos.isEmpty) {
+                  cd.showCustomDialog(context, "No se han seleccionada fotos");
+                } else if (date == null || time == null) {
+                  cd.showCustomDialog(context, "Selecciona dia i hora");
+                } else if (tags.isEmpty) {
+                  cd.showCustomDialog(context, "Añade almenos un tag");
+                } else {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return Center(
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width / 2,
+                            height: MediaQuery.of(context).size.width / 2,
+                            child: const CircularProgressIndicator(),
+                          ),
+                        );
+                      });
+                  var result = await createPlan();
+                  resetValues();
+                  Navigator.pop(context);
+                  print(result);
+                }
+              },
+              label: const Text("Crear"),
+              icon: const Icon(Icons.add),
+            )
+          : FloatingActionButton.extended(
+              backgroundColor: const Color(accentColor),
+              label: Container(),
+              isExtended: false,
+              onPressed: () {
+                final position = _scrollController.position.maxScrollExtent;
+                _scrollController.animateTo(position,
+                    duration: const Duration(milliseconds: 500), curve: Curves.easeOut);
+              },
+              icon: const Icon(Icons.arrow_downward_rounded)),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: FutureBuilder<List>(
         future: getTags().timeout(const Duration(seconds: 10)),
@@ -128,116 +184,132 @@ class _AddPlanPageState extends State<AddPlanPage> {
           // If the results from the future are correct
           if (snapshot.hasData) {
             children = <Widget>[
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.7,
+              Container(
+                color: const Color(darkerBackgroundAccent),
+                height: MediaQuery.of(context).size.height * 0.725,
                 child: SingleChildScrollView(
-                  physics: const NeverScrollableScrollPhysics(),
+                  controller: _scrollController,
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
                       minWidth: MediaQuery.of(context).size.width,
                       minHeight: MediaQuery.of(context).size.height * 0.7,
                     ),
-                    child: IntrinsicHeight(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          photoPicker(),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-                            child: SizedBox(
-                              width: MediaQuery.of(context).size.width / 1.25,
-                              child: TextField(
-                                controller: _controllerTitlePlan,
-                                textAlign: TextAlign.center,
-                                autofocus: false,
-                              ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: photoPicker(),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width / 1.25,
+                            child: TextField(
+                              controller: _controllerTitlePlan,
+                              textAlign: TextAlign.center,
+                              autofocus: false,
                             ),
                           ),
-                          //ElevatedButton.icon(onPressed: () {}, icon: const Icon(Icons.add_location_rounded), label: const Text("Ubicación")),
-                          //Date and time pickers
-                          Row(
+                        ),
+                        //ElevatedButton.icon(onPressed: () {}, icon: const Icon(Icons.add_location_rounded), label: const Text("Ubicación")),
+                        //Date and time pickers
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                children: [
+                                  Text(dateString, style: const TextStyle(fontSize: defaultFontSize)),
+                                  ElevatedButton.icon(
+                                      onPressed: () async {
+                                        var dateResult = await showDatePicker(
+                                          context: context,
+                                          builder: (context, child) {
+                                            return Theme(
+                                              child: child!,
+                                              data: Theme.of(context).copyWith(
+                                                  colorScheme: const ColorScheme.light(
+                                                primary: Color(accentColor),
+                                              )),
+                                            );
+                                          },
+                                          initialDate: DateTime.now(),
+                                          firstDate: DateTime.now(),
+                                          lastDate: DateTime.now().add(
+                                            const Duration(days: 365), //ss
+                                          ),
+                                        );
+                                        setState(() {
+                                          date = dateResult;
+                                        });
+                                        print(dateResult);
+                                      },
+                                      icon: const Icon(Icons.calendar_today),
+                                      label: const Text("Dia")),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                children: [
+                                  Text(timeString, style: const TextStyle(fontSize: defaultFontSize)),
+                                  ElevatedButton.icon(
+                                      onPressed: () async {
+                                        var timeResult = await showTimePicker(
+                                          context: context,
+                                          initialTime: TimeOfDay.now(),
+                                          builder: (context, child) {
+                                            return Theme(
+                                              child: child!,
+                                              data: Theme.of(context).copyWith(
+                                                  colorScheme: const ColorScheme.light(
+                                                primary: Color(accentColor),
+                                              )),
+                                            );
+                                          },
+                                        );
+                                        setState(() {
+                                          time = timeResult;
+                                        });
+                                        print(timeResult);
+                                      },
+                                      icon: const Icon(Icons.calendar_today),
+                                      label: const Text("Hora")),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        // People in the plan as circle avatars
+                        TagPicker(
+                            profileTags: tags,
+                            tags: snapshot.data!.map((e) => TagModel(e.uid, e.name)).toList(),
+                            onConfirmTagSelect: onConfirmTagSelect,
+                            onDeleteTagPress: onDeleteTagPress),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.75,
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: ElevatedButton.icon(
-                                    onPressed: () async {
-                                      var dateResult = await showDatePicker(
-                                        context: context,
-                                        builder: (context, child) {
-                                          return Theme(
-                                            child: child!,
-                                            data: Theme.of(context).copyWith(
-                                                colorScheme: const ColorScheme.light(
-                                              primary: Color(accentColor),
-                                            )),
-                                          );
-                                        },
-                                        initialDate: DateTime.now(),
-                                        firstDate: DateTime.now(),
-                                        lastDate: DateTime.now().add(
-                                          const Duration(days: 365), //ss
-                                        ),
-                                      );
-                                      date = dateResult;
-                                      print(dateResult);
-                                    },
-                                    icon: const Icon(Icons.calendar_today),
-                                    label: const Text("Dia")),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: ElevatedButton.icon(
-                                    onPressed: () async {
-                                      var timeResult = await showTimePicker(
-                                        context: context,
-                                        initialTime: TimeOfDay.now(),
-                                        builder: (context, child) {
-                                          return Theme(
-                                            child: child!,
-                                            data: Theme.of(context).copyWith(
-                                                colorScheme: const ColorScheme.light(
-                                              primary: Color(accentColor),
-                                            )),
-                                          );
-                                        },
-                                      );
-                                      time = timeResult;
-                                      print(timeResult);
-                                    },
-                                    icon: const Icon(Icons.calendar_today),
-                                    label: const Text("Hora")),
-                              ),
+                              avatarWidget(),
+                              avatarWidget(),
+                              avatarWidget(),
+                              avatarWidget(),
                             ],
                           ),
-                          // People in the plan as circle avatars
-                          TagPicker(
-                              profileTags: tags,
-                              tags: snapshot.data!.map((e) => TagModel(e.uid, e.name)).toList(),
-                              onConfirmTagSelect: onConfirmTagSelect,
-                              onDeleteTagPress: onDeleteTagPress),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.75,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                avatarWidget(),
-                                avatarWidget(),
-                                avatarWidget(),
-                                avatarWidget(),
-                              ],
-                            ),
-                          ),
-                          // Privacy switch for the plan
-                          Switch(
-                              value: private,
-                              onChanged: (a) {
-                                setState(() {
-                                  private = a;
-                                });
-                              })
-                        ],
-                      ),
+                        ),
+                        // Privacy switch for the plan
+                        Switch(
+                            value: private,
+                            onChanged: (a) {
+                              setState(() {
+                                private = a;
+                              });
+                            })
+                      ],
                     ),
                   ),
                 ),
@@ -266,10 +338,8 @@ class _AddPlanPageState extends State<AddPlanPage> {
             ];
           }
           return Center(
-            child: SingleChildScrollView(
-              child: Column(
-                children: children,
-              ),
+            child: Column(
+              children: children,
             ),
           );
         },
@@ -337,7 +407,6 @@ class _AddPlanPageState extends State<AddPlanPage> {
     );
   }
 
-  @override
   Widget photoPicker() {
     return photos.isEmpty
         ? GestureDetector(
