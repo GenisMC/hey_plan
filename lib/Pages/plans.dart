@@ -33,52 +33,102 @@ class _PlansPageState extends State<PlansPage> {
               )),
             );
           } else if (snapshot.hasError) {
-            return const SizedBox(
-              child: Center(child: Text("Error")),
+            return Center(
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                width: MediaQuery.of(context).size.width * 0.6,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: const [
+                      Icon(
+                        Icons.warning_rounded,
+                        size: 75,
+                        color: Colors.amber,
+                      ),
+                      Text(
+                        "Error en la base de datos, disculpa las molestias.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: defaultFontSize),
+                      )
+                    ],
+                  ),
+                ),
+              ),
             );
           } else {
             List<PlanModel> plans = snapshot.data as List<PlanModel>;
-            return ListView.builder(
-              itemBuilder: (BuildContext context, index) {
-                return ListTile(
-                  title: GestureDetector(
-                    onLongPress: () async {
-                      await showDialog(
-                        context: context,
-                        barrierDismissible: true,
-                        barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-                        barrierColor: Colors.transparent,
-                        builder: (BuildContext context) => customDialog(plans[index]),
+            return plans.isEmpty
+                ? Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      width: MediaQuery.of(context).size.width * 0.75,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: const BorderRadius.all(Radius.circular(16)),
+                      ),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: const [
+                            Icon(
+                              Icons.question_mark_rounded,
+                              size: 75,
+                              color: Colors.grey,
+                            ),
+                            Text(
+                              "Parece que aquí no hay nada, crea un plan o ve a describrir para añadir planes a tus favoritos.",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: defaultFontSize),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    itemBuilder: (BuildContext context, index) {
+                      return ListTile(
+                        title: GestureDetector(
+                          onLongPress: () async {
+                            await showDialog(
+                              context: context,
+                              barrierDismissible: true,
+                              barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+                              barrierColor: Colors.transparent,
+                              builder: (BuildContext context) => customDialog(plans[index]),
+                            );
+                          },
+                          child: SizedBox(
+                            height: MediaQuery.of(context).size.height / 3,
+                            child: Card(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16.0),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                  child: Column(
+                                    children: [
+                                      Expanded(
+                                          child: ClipRRect(
+                                              borderRadius: BorderRadius.circular(16),
+                                              child: Image.network(plans[index].photoURLs.first))),
+                                      Text(
+                                        DateFormat.yMMMMEEEEd().format(plans[index].date),
+                                        style: const TextStyle(fontSize: defaultFontSize),
+                                      ),
+                                      Text(plans[index].title, style: const TextStyle(fontSize: defaultFontSize))
+                                    ],
+                                  ),
+                                )),
+                          ),
+                        ),
                       );
                     },
-                    child: SizedBox(
-                      height: MediaQuery.of(context).size.height / 3,
-                      child: Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16.0),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                            child: Column(
-                              children: [
-                                Expanded(
-                                    child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(16),
-                                        child: Image.network(plans[index].photoURLs.first))),
-                                Text(
-                                  DateFormat.yMMMMEEEEd().format(plans[index].date),
-                                  style: const TextStyle(fontSize: defaultFontSize),
-                                ),
-                                Text(plans[index].title, style: const TextStyle(fontSize: defaultFontSize))
-                              ],
-                            ),
-                          )),
-                    ),
-                  ),
-                );
-              },
-              itemCount: plans.length,
-            );
+                    itemCount: plans.length,
+                  );
           }
         }),
       ),

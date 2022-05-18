@@ -11,7 +11,6 @@ class CustomDialog {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: SizedBox(
-                height: MediaQuery.of(context).size.width * 0.5,
                 width: MediaQuery.of(context).size.width * 0.3,
                 child: SingleChildScrollView(
                   child: Column(
@@ -26,7 +25,11 @@ class CustomDialog {
                             size: MediaQuery.of(context).size.width * 0.2,
                             color: Colors.blue[300],
                           )),
-                      Text(message, style: const TextStyle(fontSize: defaultFontSize, fontWeight: FontWeight.bold)),
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(message,
+                            style: const TextStyle(fontSize: defaultFontSize, fontWeight: FontWeight.bold)),
+                      ),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
                         child: SizedBox(

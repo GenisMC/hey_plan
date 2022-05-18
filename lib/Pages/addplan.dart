@@ -1,11 +1,7 @@
-import 'dart:math';
-
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:hey_plan/Models/profile_model.dart';
 import 'package:hey_plan/Models/tag_model.dart';
 import 'package:hey_plan/Widgets/custom_dialog.dart';
 import 'package:hey_plan/Widgets/tag_picker.dart';
@@ -26,6 +22,7 @@ class AddPlanPage extends StatefulWidget {
 class _AddPlanPageState extends State<AddPlanPage> {
   final Singleton singleton = Singleton.instance;
   final TextEditingController _controllerTitlePlan = TextEditingController();
+  final TextEditingController _controllerDescription = TextEditingController();
   final CustomDialog cd = CustomDialog();
   final ScrollController _scrollController = ScrollController();
   bool private = true;
@@ -62,8 +59,8 @@ class _AddPlanPageState extends State<AddPlanPage> {
     var timeUuid = uuid.v1();
     List<String> photoURLs = await singleton.storage.uploadPlanPhotos(timeUuid, photos);
     List<String> tagUIDs = tags.map((e) => e.uid).toList();
-    return await singleton.db.createNewPlan(_controllerTitlePlan.text, timeUuid, [singleton.auth.user!.uid],
-        formattedDateTime, photoURLs, tagUIDs, private);
+    return await singleton.db.createNewPlan(_controllerTitlePlan.text, _controllerDescription.text, timeUuid,
+        [singleton.auth.user!.uid], formattedDateTime, photoURLs, tagUIDs, private);
   }
 
   Future<List<TagModel>> getTags() async {
@@ -138,24 +135,27 @@ class _AddPlanPageState extends State<AddPlanPage> {
               onPressed: () async {
                 if (_controllerTitlePlan.text == "") {
                   cd.showCustomDialog(context, "Plan sin título");
+                } else if (_controllerDescription.text == "") {
+                  cd.showCustomDialog(context, "Porfavor escribe una pequeña descripción");
                 } else if (photos.isEmpty) {
-                  cd.showCustomDialog(context, "No se han seleccionada fotos");
+                  cd.showCustomDialog(context, "No se han seleccionado fotos");
                 } else if (date == null || time == null) {
                   cd.showCustomDialog(context, "Selecciona dia i hora");
                 } else if (tags.isEmpty) {
                   cd.showCustomDialog(context, "Añade almenos un tag");
                 } else {
                   showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return Center(
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width / 2,
-                            height: MediaQuery.of(context).size.width / 2,
-                            child: const CircularProgressIndicator(),
-                          ),
-                        );
-                      });
+                    context: context,
+                    builder: (BuildContext context) {
+                      return Center(
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width / 2,
+                          height: MediaQuery.of(context).size.width / 2,
+                          child: const CircularProgressIndicator(),
+                        ),
+                      );
+                    },
+                  );
                   var result = await createPlan();
                   resetValues();
                   Navigator.pop(context);
@@ -206,14 +206,27 @@ class _AddPlanPageState extends State<AddPlanPage> {
                           child: SizedBox(
                             width: MediaQuery.of(context).size.width / 1.25,
                             child: TextField(
+                              decoration: const InputDecoration(
+                                  hintText: "Título del plan", hintStyle: TextStyle(fontSize: defaultFontSize)),
                               controller: _controllerTitlePlan,
-                              textAlign: TextAlign.center,
+                              style: const TextStyle(fontSize: defaultFontSize),
                               autofocus: false,
                             ),
                           ),
                         ),
-                        //ElevatedButton.icon(onPressed: () {}, icon: const Icon(Icons.add_location_rounded), label: const Text("Ubicación")),
-                        //Date and time pickers
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width / 1.25,
+                          child: TextField(
+                            decoration: const InputDecoration(
+                                hintText: "Descripción", hintStyle: TextStyle(fontSize: defaultFontSize)),
+                            controller: _controllerDescription,
+                            keyboardType: TextInputType.text,
+                            style: const TextStyle(fontSize: defaultFontSize),
+                            maxLines: 5,
+                            autofocus: false,
+                          ),
+                        ),
+                        //TODO: ElevatedButton.icon(onPressed: () {}, icon: const Icon(Icons.add_location_rounded), label: const Text("Ubicación")),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
