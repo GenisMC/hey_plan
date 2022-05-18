@@ -3,6 +3,7 @@ import 'package:flutter_tags_x/flutter_tags_x.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hey_plan/Globals/globals.dart';
 import 'package:hey_plan/Models/tag_model.dart';
+import 'package:hey_plan/Widgets/custom_dialog.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 
 class TagPicker extends StatefulWidget {
@@ -24,14 +25,22 @@ class TagPicker extends StatefulWidget {
 }
 
 class _TagPickerState extends State<TagPicker> {
+  final CustomDialog cd = CustomDialog();
   List<TagModel> tagSelectedForDelete = [];
 
   late List<MultiSelectItem<TagModel?>> tagDropdownItems = [];
 
   @override
   void initState() {
-    tagDropdownItems = widget.tags.map((e) => MultiSelectItem<TagModel?>(e, e.name)).toList();
+    List<TagModel> dropDownTags = widget.tags;
+    dropDownTags.removeWhere((element) => widget.profileTags.map((e) => e.uid).contains(element.uid));
+    tagDropdownItems = dropDownTags.map((e) => MultiSelectItem<TagModel?>(e, e.name)).toList();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   void tagSelected(i) {
@@ -73,20 +82,14 @@ class _TagPickerState extends State<TagPicker> {
                   cancelText: const Text("Cancelar", style: TextStyle(fontSize: defaultFontSize, color: Colors.black)),
                   title: const Text("Gustos", style: TextStyle(fontSize: defaultFontSize * 1.3)),
                   listType: MultiSelectListType.CHIP,
-                  onConfirm: (o) {
-                    widget.onConfirmTagSelect(o);
-                    o.clear();
+                  onConfirm: (o) async {
+                    if (widget.profileTags.length + o.length <= 10) {
+                      await widget.onConfirmTagSelect(o);
+                      o.clear();
+                    } else {
+                      cd.showCustomDialog(context, "Solo pueden seleccionar-se hasta 10 tags");
+                    }
                   }),
-              tagSelectedForDelete.isNotEmpty
-                  ? ElevatedButton.icon(
-                      icon: const Icon(Icons.close, color: Colors.red),
-                      label: const Text("Eliminar selección", style: TextStyle(fontSize: defaultFontSize)),
-                      onPressed: () async {
-                        await widget.onDeleteTagPress(tagSelectedForDelete);
-                        tagSelectedForDelete.clear();
-                      },
-                    )
-                  : Container(),
               Padding(
                 padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
                 child: Tags(
@@ -100,11 +103,22 @@ class _TagPickerState extends State<TagPicker> {
                       textStyle: GoogleFonts.farro(fontSize: defaultFontSize * 0.8),
                       onPressed: (i) {
                         tagSelected(i);
+                        setState(() {});
                       },
                     );
                   },
                 ),
               ),
+              tagSelectedForDelete.isNotEmpty
+                  ? ElevatedButton.icon(
+                      icon: const Icon(Icons.close, color: Colors.red),
+                      label: const Text("Eliminar selección", style: TextStyle(fontSize: defaultFontSize)),
+                      onPressed: () async {
+                        await widget.onDeleteTagPress(tagSelectedForDelete);
+                        tagSelectedForDelete.clear();
+                      },
+                    )
+                  : Container(),
             ],
           ),
         ),

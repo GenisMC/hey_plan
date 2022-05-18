@@ -41,6 +41,7 @@ class _ScaffoldPageState extends State<ScaffoldPage> {
         children: const [ExplorePage(), AddPlanPage(), PlansPage()],
         controller: pageController,
         scrollDirection: Axis.horizontal,
+        physics: _selectedIndex == 0 ? const NeverScrollableScrollPhysics() : const ScrollPhysics(),
         onPageChanged: (i) {
           setState(() {
             _selectedIndex = i;

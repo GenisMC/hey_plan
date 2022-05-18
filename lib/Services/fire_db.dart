@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:collection/collection.dart';
 import 'package:hey_plan/Models/plan_model.dart';
 import 'package:hey_plan/Models/tag_model.dart';
 
@@ -150,6 +149,30 @@ class FireDB {
   /// ### TODO. Currently gets all plans in the plans collection
   ///
   /// Algorithm in progress
+  Future getDiscoverPlanList(List<String> tagUIDs) async {
+    CollectionReference plans = firestore.collection('plans');
+    List<PlanModel> planList = [];
+
+    await plans.where("tags", arrayContainsAny: tagUIDs).limit(10).get().then((plans) {
+      for (var planData in plans.docs) {
+        planList.add(
+          PlanModel(
+            planData.id,
+            planData.get('title'),
+            planData.get('description'),
+            planData.get('date').toDate(),
+            planData.get('photos'),
+            planData.get('tags'),
+            planData.get('users'),
+            planData.get('private'),
+          ),
+        );
+      }
+    });
+
+    return planList;
+  }
+
   Future getUserPlans(String userUID) async {
     List<PlanModel> planList = [];
 
@@ -171,6 +194,20 @@ class FireDB {
     });
 
     return planList;
+  }
+
+  Future getUserTags(String userUID) async {
+    CollectionReference profiles = firestore.collection('profiles');
+
+    List<String> tags = [];
+
+    await profiles.doc(userUID).get().then((doc) {
+      for (var tag in doc.get('tags')) {
+        tags.add(tag);
+      }
+    });
+
+    return tags;
   }
 
   Future removeUserFromPLan(String docId, String userUID) async {

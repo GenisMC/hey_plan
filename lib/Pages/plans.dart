@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hey_plan/Globals/globals.dart';
 import 'package:hey_plan/Models/plan_model.dart';
 import 'package:hey_plan/Services/singleton.dart';
+import 'package:hey_plan/Widgets/empty_message.dart';
+import 'package:hey_plan/Widgets/error_message.dart';
 import 'package:intl/intl.dart';
 
 class PlansPage extends StatefulWidget {
@@ -33,61 +35,13 @@ class _PlansPageState extends State<PlansPage> {
               )),
             );
           } else if (snapshot.hasError) {
-            return Center(
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                width: MediaQuery.of(context).size.width * 0.6,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.all(Radius.circular(16)),
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: const [
-                      Icon(
-                        Icons.warning_rounded,
-                        size: 75,
-                        color: Colors.amber,
-                      ),
-                      Text(
-                        "Error en la base de datos, disculpa las molestias.",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: defaultFontSize),
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            );
+            return const ErrorMessage();
           } else {
             List<PlanModel> plans = snapshot.data as List<PlanModel>;
             return plans.isEmpty
-                ? Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      width: MediaQuery.of(context).size.width * 0.75,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: const BorderRadius.all(Radius.circular(16)),
-                      ),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: const [
-                            Icon(
-                              Icons.question_mark_rounded,
-                              size: 75,
-                              color: Colors.grey,
-                            ),
-                            Text(
-                              "Parece que aquí no hay nada, crea un plan o ve a describrir para añadir planes a tus favoritos.",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: defaultFontSize),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  )
+                ? const EmptyMessage(
+                    message:
+                        "Parece que aquí no hay nada, crea un plan o ve a describrir para añadir planes a tus favoritos.")
                 : ListView.builder(
                     itemBuilder: (BuildContext context, index) {
                       return ListTile(

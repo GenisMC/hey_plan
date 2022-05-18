@@ -4,7 +4,6 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_tags_x/flutter_tags_x.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hey_plan/Models/profile_model.dart';
 import 'package:hey_plan/Pages/start.dart';
@@ -13,7 +12,6 @@ import 'package:hey_plan/Widgets/tag_picker.dart';
 import '../Globals/globals.dart';
 import '../Models/tag_model.dart';
 import '../Widgets/loading_widget.dart';
-import 'package:multi_select_flutter/multi_select_flutter.dart';
 
 /// ### Profile page widget starting with a Scaffold
 ///
@@ -89,10 +87,10 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  void onConfirmTagSelect(o) {
+  void onConfirmTagSelect(o) async {
     List<TagModel?> select = o as List<TagModel?>;
     if (select != []) {
-      singleton.db.addTagToProfile(singleton.auth.user!.uid, select.map((e) => e!.uid).toList());
+      await singleton.db.addTagToProfile(singleton.auth.user!.uid, select.map((e) => e!.uid).toList());
     }
     setState(() {});
   }
