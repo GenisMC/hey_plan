@@ -28,59 +28,52 @@ class _StartPageState extends State<StartPage> {
                 child: Container(
                   height: MediaQuery.of(context).size.height * 0.4,
                   decoration: const BoxDecoration(
-                      color: Color(darkerBackgroundAccent),
-                      borderRadius: BorderRadius.all(Radius.circular(10)),),
+                    color: Color(darkerBackgroundAccent),
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(15.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Text("REGISTRARSE",
-                            style: GoogleFonts.fredokaOne(
-                                fontSize: defaultFontSize * 2)),
+                        Text("ENTRAR", style: GoogleFonts.fredokaOne(fontSize: defaultFontSize * 2)),
                         ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                                fixedSize: const Size(215, 55)),
+                            style: ElevatedButton.styleFrom(fixedSize: const Size(215, 55)),
                             onPressed: () {
                               Navigator.pushNamed(context, '/signin');
                             },
                             child: FittedBox(
                                 child: Text("Con email i contraseña",
-                                    style: GoogleFonts.farro(
-                                        fontSize: defaultFontSize)))),
+                                    style: GoogleFonts.farro(fontSize: defaultFontSize)))),
                         InkWell(
                           onTap: () async {
                             var result = await singleton.auth.signInWithGoogle();
-                            if(result != null) {
-                              if (result.additionalUserInfo!.isNewUser ==
-                                  true) {
+                            if (result != null) {
+                              if (result.additionalUserInfo!.isNewUser == true) {
                                 Navigator.pushNamed(context, '/newuser');
                               }
-                            }
-                            else{
+                            } else {
                               showDialog(
                                   context: context,
-                                  builder: (_) => const RegisterErrorDialog(response:"Error al iniciar el servicio de Google"));
+                                  builder: (_) =>
+                                      const RegisterErrorDialog(response: "Error al iniciar el servicio de Google"));
                             }
                             setState(() {});
                           },
                           child: Container(
                             decoration: BoxDecoration(
                                 color: const Color(0xFF5287cc),
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(5)),
+                                borderRadius: const BorderRadius.all(Radius.circular(5)),
                                 border: Border.all(color: Colors.grey, width: 1)),
                             child: Padding(
                               padding: const EdgeInsets.all(10),
                               child: Wrap(
                                 crossAxisAlignment: WrapCrossAlignment.center,
                                 children: [
-                                  const Icon(Icons.android,
-                                      size: defaultFontSize * 2),
+                                  const Icon(Icons.android, size: defaultFontSize * 2),
                                   FittedBox(
-                                    child: Text('Entrar con Google',
-                                        style: GoogleFonts.farro(
-                                            fontSize: defaultFontSize)),
+                                    child:
+                                        Text('Entrar con Google', style: GoogleFonts.farro(fontSize: defaultFontSize)),
                                   ),
                                 ],
                               ),

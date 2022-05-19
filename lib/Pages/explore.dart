@@ -1,3 +1,4 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:hey_plan/Globals/globals.dart';
 import 'package:hey_plan/Models/plan_model.dart';
@@ -19,6 +20,7 @@ class ExplorePage extends StatefulWidget {
 
 class _ExplorePageState extends State<ExplorePage> {
   final Singleton singleton = Singleton.instance;
+  int index = 0;
   late List<PlanModel> planList = [];
   late List<TagModel> planTags = [];
   late List<TagModel> tags = [];
@@ -26,6 +28,7 @@ class _ExplorePageState extends State<ExplorePage> {
     try {
       List<String> tags = await singleton.db.getUserTags(singleton.auth.user!.uid);
       planList = await singleton.db.getDiscoverPlanList(tags);
+      planTags = await singleton.db.getProfileTags(planList[index].tagUIDs);
       return planList;
     } catch (e) {
       print(e);
@@ -54,74 +57,107 @@ class _ExplorePageState extends State<ExplorePage> {
               return const EmptyMessage(
                   message: 'Parece que no podemos encontrar nada, prueba a cambiar tus preferencias.');
             } else {
-              return Center(
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Text(
-                          planList.first.title,
-                          style: const TextStyle(fontSize: defaultFontSize * 1.3, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Container(
-                          width: MediaQuery.of(context).size.width * 0.8,
-                          height: MediaQuery.of(context).size.height * 0.3,
-                          color: const Color(darkerBackgroundAccent),
-                        ),
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          "Fecha",
-                          style: TextStyle(fontSize: defaultFontSize, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      TagPicker(
-                          profileTags: planTags,
-                          tags: tags,
-                          onConfirmTagSelect: onConfirmTagSelect,
-                          onDeleteTagPress: onDeleteTagPress),
-                      Container(
-                        width: MediaQuery.of(context).size.width * 0.8,
-                        padding: const EdgeInsets.all(16),
-                        decoration: const BoxDecoration(
-                            color: Color(darkerBackgroundAccent), borderRadius: BorderRadius.all(Radius.circular(16))),
-                        child: const Text(
-                          "Logsd fd sal d dk sd lkdnfsk nkfdns nn kfdks l lkdsl ndnsn kfndks l lksd n sldk sl  ndksn  ",
-                          style: TextStyle(fontSize: defaultFontSize),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.8,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              avatarWidget(),
-                              avatarWidget(),
-                              avatarWidget(),
-                              avatarWidget(),
-                            ],
+              DateTime fechaDT = planList[index].date;
+              String month = fechaDT.month < 10 ? "0" + fechaDT.month.toString() : fechaDT.month.toString();
+              String minute = fechaDT.minute < 10 ? "0" + fechaDT.minute.toString() : fechaDT.minute.toString();
+              String fecha = "${fechaDT.day}/$month/${fechaDT.year} - ${fechaDT.hour}:${minute}h";
+              return PageView(
+                onPageChanged: (e) {},
+                children: [
+                  Center(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Text(
+                              planList[index].title,
+                              style: const TextStyle(fontSize: defaultFontSize * 1.3, fontWeight: FontWeight.bold),
+                            ),
                           ),
-                        ),
+                          Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  CarouselSlider(
+                                      items: planList[index].photoURLs.map((e) {
+                                        return Builder(
+                                          builder: (BuildContext context) {
+                                            return GestureDetector(
+                                              child: SizedBox(
+                                                height: MediaQuery.of(context).size.height / 3.3,
+                                                child: FittedBox(
+                                                  fit: BoxFit.contain,
+                                                  child: Container(
+                                                      decoration: BoxDecoration(
+                                                          color: const Color(inputBorderColor),
+                                                          borderRadius: const BorderRadius.all(Radius.circular(16)),
+                                                          border: Border.all(
+                                                              color: const Color(darkestBackroundAccent), width: 5)),
+                                                      child: Image.network(e, fit: BoxFit.cover)),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      }).toList(),
+                                      options: CarouselOptions(height: MediaQuery.of(context).size.height / 3.3)),
+                                ],
+                              )),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              fecha,
+                              style: const TextStyle(fontSize: defaultFontSize, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          TagPicker(
+                              profileTags: planTags,
+                              tags: tags,
+                              onConfirmTagSelect: onConfirmTagSelect,
+                              onDeleteTagPress: onDeleteTagPress),
+                          Container(
+                            width: MediaQuery.of(context).size.width * 0.8,
+                            padding: const EdgeInsets.all(16),
+                            decoration: const BoxDecoration(
+                                color: Color(darkerBackgroundAccent),
+                                borderRadius: BorderRadius.all(Radius.circular(16))),
+                            child: Text(
+                              planList[index].desc,
+                              style: const TextStyle(fontSize: defaultFontSize),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                            child: SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.8,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  avatarWidget(),
+                                  avatarWidget(),
+                                  avatarWidget(),
+                                  avatarWidget(),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                            child: FloatingActionButton.extended(
+                              backgroundColor: const Color(accentColor),
+                              onPressed: () {},
+                              label: const Text("Enviar solicitud"),
+                            ),
+                          )
+                        ],
                       ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-                        child: FloatingActionButton.extended(
-                          onPressed: () {},
-                          label: const Text("Enviar solicitud"),
-                        ),
-                      )
-                    ],
+                    ),
                   ),
-                ),
+                ],
               );
             }
           }
