@@ -31,49 +31,70 @@ class _ExplorePageState extends State<ExplorePage> {
   Future getInitialPlans() async {
     final prefs = await SharedPreferences.getInstance();
     try {
+      await checkCacheRefresh(prefs);
       var cache = prefs.getStringList("planCache");
       List<String> tags =
           await singleton.db.getUserTags(singleton.auth.user!.uid);
       planList = await singleton.db.getDiscoverPlanList(tags, cache ?? []);
-      await updatePlanCache(prefs, planList.map((e) => e.docID).toList());
       planTags = await singleton.db.getProfileTags(planList[index].tagUIDs);
       _matchEngine = MatchEngine(
-          swipeItems:
-              planList.map((e) => SwipeItem(content: e.docID)).toList());
+          swipeItems: planList
+              .map((e) => SwipeItem(
+                    content: e.docID,
+                    likeAction: () async {
+                      await updatePlanCache(e.docID);
+                    },
+                    nopeAction: () async {
+                      await updatePlanCache(e.docID);
+                    },
+                    superlikeAction: () async {
+                      await updatePlanCache(e.docID);
+                    },
+                  ))
+              .toList());
       return planList;
     } catch (e) {
       print(e);
     }
   }
 
-  Future updatePlanCache(SharedPreferences prefs, List<String> planUIDs) async {
-    var cache = prefs.getStringList('planCache');
+  Future checkCacheRefresh(SharedPreferences prefs) async {
     var lastRefresh = prefs.getString('refreshDate');
-
     if (lastRefresh != null) {
       var remainder = DateTime.parse(lastRefresh).difference(DateTime.now());
-      print(remainder);
-      print(remainder.inSeconds - const Duration(minutes: 7).inSeconds);
-      if (remainder.compareTo(const Duration(minutes: 4)).isNegative) {
-        print("time");
+      if ((const Duration(minutes: 1).inSeconds + remainder.inSeconds)
+          .isNegative) {
+        await prefs.clear();
       }
     } else {
       prefs.setString('refreshDate', DateTime.now().toString());
     }
+  }
+
+  Future updatePlanCache(String planUID) async {
+    final prefs = await SharedPreferences.getInstance();
+    await checkCacheRefresh(prefs);
+    var cache = prefs.getStringList('planCache');
 
     if (cache != null) {
-      for (var uid in planUIDs) {
-        if (!cache.contains(uid)) {
-          cache.add(uid);
-        }
+      if (!cache.contains(planUID)) {
+        cache.add(planUID);
+        prefs.setStringList('planCache', cache);
       }
     } else {
-      prefs.setStringList('planCache', planUIDs);
+      prefs.setStringList('planCache', [planUID]);
+      prefs.setString('refreshDate', DateTime.now().toString());
     }
   }
 
-  Future getNewPlans() async {
-    print("Gaming");
+  Future getNewPlans(SwipeItem plan) async {
+    await updatePlanCache(plan.content);
+    setState(() {});
+  }
+
+  Future getPlanTags() async {
+    planTags = await singleton.db.getProfileTags(planList[index].tagUIDs);
+    setState(() {});
   }
 
   @override
@@ -110,9 +131,11 @@ class _ExplorePageState extends State<ExplorePage> {
                   "${fechaDT.day}/$month/${fechaDT.year} - ${fechaDT.hour}:${minute}h";
               return SwipeCards(
                   matchEngine: _matchEngine,
-                  onStackFinished: () {},
+                  onStackFinished: () {
+                    setState(() {});
+                  },
                   itemChanged: (e, i) async {
-                    getNewPlans();
+                    planTags = [];
                   },
                   itemBuilder: (BuildContext context, int index) {
                     return Center(
@@ -197,15 +220,21 @@ class _ExplorePageState extends State<ExplorePage> {
                                   padding: const EdgeInsets.all(8.0),
                                   child: Tags(
                                     itemCount: planTags.length,
+                                    key: Key(index.toString()),
                                     itemBuilder: (int index) {
-                                      final tag = planTags[index];
-                                      return ItemTags(
-                                        index: index,
-                                        key: Key(index.toString()),
-                                        title: tag.name,
-                                        textStyle: GoogleFonts.farro(
-                                            fontSize: defaultFontSize * 0.8),
-                                      );
+                                      if (planTags.isEmpty) {
+                                        getPlanTags();
+                                        return const CircularProgressIndicator();
+                                      } else {
+                                        final tag = planTags[index];
+                                        return ItemTags(
+                                          index: index,
+                                          key: Key(index.toString()),
+                                          title: tag.name,
+                                          textStyle: GoogleFonts.farro(
+                                              fontSize: defaultFontSize * 0.8),
+                                        );
+                                      }
                                     },
                                   ),
                                 ),

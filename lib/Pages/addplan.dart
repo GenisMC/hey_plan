@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hey_plan/Models/tag_model.dart';
 import 'package:hey_plan/Widgets/custom_dialog.dart';
+import 'package:hey_plan/Widgets/loading_widget.dart';
 import 'package:hey_plan/Widgets/tag_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:dotted_border/dotted_border.dart';
@@ -55,12 +56,21 @@ class _AddPlanPageState extends State<AddPlanPage> {
 
   Future createPlan() async {
     var uuid = const Uuid();
-    DateTime formattedDateTime = DateTime(date!.year, date!.month, date!.day, time!.hour, time!.minute);
+    DateTime formattedDateTime =
+        DateTime(date!.year, date!.month, date!.day, time!.hour, time!.minute);
     var timeUuid = uuid.v1();
-    List<String> photoURLs = await singleton.storage.uploadPlanPhotos(timeUuid, photos);
+    List<String> photoURLs =
+        await singleton.storage.uploadPlanPhotos(timeUuid, photos);
     List<String> tagUIDs = tags.map((e) => e.uid).toList();
-    return await singleton.db.createNewPlan(_controllerTitlePlan.text, _controllerDescription.text, timeUuid,
-        [singleton.auth.user!.uid], formattedDateTime, photoURLs, tagUIDs, private);
+    return await singleton.db.createNewPlan(
+        _controllerTitlePlan.text,
+        _controllerDescription.text,
+        timeUuid,
+        [singleton.auth.user!.uid],
+        formattedDateTime,
+        photoURLs,
+        tagUIDs,
+        private);
   }
 
   Future<List<TagModel>> getTags() async {
@@ -80,7 +90,8 @@ class _AddPlanPageState extends State<AddPlanPage> {
 
   Future pickPhotos() async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true, type: FileType.image);
+      FilePickerResult? result = await FilePicker.platform
+          .pickFiles(allowMultiple: true, type: FileType.image);
       if (result != null) {
         for (var path in result.paths) {
           photos.add(File(path!));
@@ -122,7 +133,8 @@ class _AddPlanPageState extends State<AddPlanPage> {
       if (date!.month < 10) {
         month = "0" + month;
       }
-      dateString = date!.day.toString() + " - " + month + " - " + date!.year.toString();
+      dateString =
+          date!.day.toString() + " - " + month + " - " + date!.year.toString();
     }
     if (time != null) {
       timeString = time!.hour.toString() + ":" + time!.minute.toString() + " h";
@@ -136,7 +148,8 @@ class _AddPlanPageState extends State<AddPlanPage> {
                 if (_controllerTitlePlan.text == "") {
                   cd.showCustomDialog(context, "Plan sin título");
                 } else if (_controllerDescription.text == "") {
-                  cd.showCustomDialog(context, "Porfavor escribe una pequeña descripción");
+                  cd.showCustomDialog(
+                      context, "Porfavor escribe una pequeña descripción");
                 } else if (photos.isEmpty) {
                   cd.showCustomDialog(context, "No se han seleccionado fotos");
                 } else if (date == null || time == null) {
@@ -144,18 +157,8 @@ class _AddPlanPageState extends State<AddPlanPage> {
                 } else if (tags.isEmpty) {
                   cd.showCustomDialog(context, "Añade almenos un tag");
                 } else {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return Center(
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width / 2,
-                          height: MediaQuery.of(context).size.width / 2,
-                          child: const CircularProgressIndicator(),
-                        ),
-                      );
-                    },
-                  );
+                  final LoadingWidget loader = LoadingWidget();
+                  loader.showLoadingWidget(context, "Preparando...");
                   var result = await createPlan();
                   resetValues();
                   Navigator.pop(context);
@@ -172,7 +175,8 @@ class _AddPlanPageState extends State<AddPlanPage> {
               onPressed: () {
                 final position = _scrollController.position.maxScrollExtent;
                 _scrollController.animateTo(position,
-                    duration: const Duration(milliseconds: 500), curve: Curves.easeOut);
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeOut);
               },
               icon: const Icon(Icons.arrow_downward_rounded)),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -207,7 +211,9 @@ class _AddPlanPageState extends State<AddPlanPage> {
                             width: MediaQuery.of(context).size.width / 1.25,
                             child: TextField(
                               decoration: const InputDecoration(
-                                  hintText: "Título del plan", hintStyle: TextStyle(fontSize: defaultFontSize)),
+                                  hintText: "Título del plan",
+                                  hintStyle:
+                                      TextStyle(fontSize: defaultFontSize)),
                               controller: _controllerTitlePlan,
                               style: const TextStyle(fontSize: defaultFontSize),
                               autofocus: false,
@@ -218,7 +224,9 @@ class _AddPlanPageState extends State<AddPlanPage> {
                           width: MediaQuery.of(context).size.width / 1.25,
                           child: TextField(
                             decoration: const InputDecoration(
-                                hintText: "Descripción", hintStyle: TextStyle(fontSize: defaultFontSize)),
+                                hintText: "Descripción",
+                                hintStyle:
+                                    TextStyle(fontSize: defaultFontSize)),
                             controller: _controllerDescription,
                             keyboardType: TextInputType.text,
                             style: const TextStyle(fontSize: defaultFontSize),
@@ -234,7 +242,9 @@ class _AddPlanPageState extends State<AddPlanPage> {
                               padding: const EdgeInsets.all(8.0),
                               child: Column(
                                 children: [
-                                  Text(dateString, style: const TextStyle(fontSize: defaultFontSize)),
+                                  Text(dateString,
+                                      style: const TextStyle(
+                                          fontSize: defaultFontSize)),
                                   ElevatedButton.icon(
                                       onPressed: () async {
                                         var dateResult = await showDatePicker(
@@ -243,7 +253,8 @@ class _AddPlanPageState extends State<AddPlanPage> {
                                             return Theme(
                                               child: child!,
                                               data: Theme.of(context).copyWith(
-                                                  colorScheme: const ColorScheme.light(
+                                                  colorScheme:
+                                                      const ColorScheme.light(
                                                 primary: Color(accentColor),
                                               )),
                                             );
@@ -268,7 +279,9 @@ class _AddPlanPageState extends State<AddPlanPage> {
                               padding: const EdgeInsets.all(8.0),
                               child: Column(
                                 children: [
-                                  Text(timeString, style: const TextStyle(fontSize: defaultFontSize)),
+                                  Text(timeString,
+                                      style: const TextStyle(
+                                          fontSize: defaultFontSize)),
                                   ElevatedButton.icon(
                                       onPressed: () async {
                                         var timeResult = await showTimePicker(
@@ -278,7 +291,8 @@ class _AddPlanPageState extends State<AddPlanPage> {
                                             return Theme(
                                               child: child!,
                                               data: Theme.of(context).copyWith(
-                                                  colorScheme: const ColorScheme.light(
+                                                  colorScheme:
+                                                      const ColorScheme.light(
                                                 primary: Color(accentColor),
                                               )),
                                             );
@@ -299,7 +313,9 @@ class _AddPlanPageState extends State<AddPlanPage> {
                         // People in the plan as circle avatars
                         TagPicker(
                             profileTags: tags,
-                            tags: snapshot.data!.map((e) => TagModel(e.uid, e.name)).toList(),
+                            tags: snapshot.data!
+                                .map((e) => TagModel(e.uid, e.name))
+                                .toList(),
                             onConfirmTagSelect: onConfirmTagSelect,
                             onDeleteTagPress: onDeleteTagPress),
                         SizedBox(
@@ -373,10 +389,15 @@ class _AddPlanPageState extends State<AddPlanPage> {
         alignment: Alignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.only(top: padding, left: padding, bottom: padding + avatarRadius, right: padding),
+            padding: const EdgeInsets.only(
+                top: padding,
+                left: padding,
+                bottom: padding + avatarRadius,
+                right: padding),
             margin: const EdgeInsets.only(bottom: avatarRadius),
-            decoration:
-                const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.all(Radius.circular(padding))),
+            decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.all(Radius.circular(padding))),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -385,14 +406,16 @@ class _AddPlanPageState extends State<AddPlanPage> {
                       await pickPhotos();
                       Navigator.pop(context);
                     },
-                    child: const Text("Añadir foto", style: TextStyle(fontSize: defaultFontSize))),
+                    child: const Text("Añadir foto",
+                        style: TextStyle(fontSize: defaultFontSize))),
                 TextButton(
                   onPressed: () {
                     photos.remove(item);
                     setState(() {});
                     Navigator.pop(context);
                   },
-                  child: const Text("Eliminar foto", style: TextStyle(fontSize: defaultFontSize)),
+                  child: const Text("Eliminar foto",
+                      style: TextStyle(fontSize: defaultFontSize)),
                 ),
               ],
             ),
@@ -437,8 +460,13 @@ class _AddPlanPageState extends State<AddPlanPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: const [
-                        Text("Subir foto", style: TextStyle(fontSize: defaultFontSize, color: Color(textButtonColor))),
-                        Icon(Icons.add_a_photo, size: defaultFontSize * 1.5, color: Color(textButtonColor))
+                        Text("Subir foto",
+                            style: TextStyle(
+                                fontSize: defaultFontSize,
+                                color: Color(textButtonColor))),
+                        Icon(Icons.add_a_photo,
+                            size: defaultFontSize * 1.5,
+                            color: Color(textButtonColor))
                       ],
                     ),
                   ),
@@ -458,9 +486,11 @@ class _AddPlanPageState extends State<AddPlanPage> {
                             await showDialog(
                               context: context,
                               barrierDismissible: true,
-                              barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+                              barrierLabel: MaterialLocalizations.of(context)
+                                  .modalBarrierDismissLabel,
                               barrierColor: Colors.transparent,
-                              builder: (BuildContext context) => customDialog(e),
+                              builder: (BuildContext context) =>
+                                  customDialog(e),
                             );
                           },
                           child: SizedBox(
@@ -470,8 +500,12 @@ class _AddPlanPageState extends State<AddPlanPage> {
                               child: Container(
                                   decoration: BoxDecoration(
                                       color: const Color(inputBorderColor),
-                                      borderRadius: const BorderRadius.all(Radius.circular(16)),
-                                      border: Border.all(color: const Color(darkestBackroundAccent), width: 5)),
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(16)),
+                                      border: Border.all(
+                                          color: const Color(
+                                              darkestBackroundAccent),
+                                          width: 5)),
                                   child: Image.file(e, fit: BoxFit.cover)),
                             ),
                           ),
@@ -479,7 +513,8 @@ class _AddPlanPageState extends State<AddPlanPage> {
                       },
                     );
                   }).toList(),
-                  options: CarouselOptions(height: MediaQuery.of(context).size.height / 3.3)),
+                  options: CarouselOptions(
+                      height: MediaQuery.of(context).size.height / 3.3)),
             ],
           );
   }
