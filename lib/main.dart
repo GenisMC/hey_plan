@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hey_plan/Globals/globals.dart';
+import 'package:hey_plan/Pages/chat.dart';
 import 'package:hey_plan/Pages/explore.dart';
+import 'package:hey_plan/Pages/messages.dart';
 import 'package:hey_plan/Pages/newuser.dart';
 import 'package:hey_plan/Pages/plans.dart';
 import 'package:hey_plan/Pages/profile.dart';
@@ -44,17 +46,22 @@ class MyApp extends StatelessWidget {
         textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(primary: const Color(textButtonColor))),
         elevatedButtonTheme:
             ElevatedButtonThemeData(style: ElevatedButton.styleFrom(primary: Colors.white, onPrimary: Colors.black)),
-        inputDecorationTheme: const InputDecorationTheme(
-            border: OutlineInputBorder(borderSide: BorderSide(color: Color(inputBorderColor), width: inputBorderWidth)),
-            enabledBorder:
-                OutlineInputBorder(borderSide: BorderSide(color: Color(inputBorderColor), width: inputBorderWidth)),
+        inputDecorationTheme: InputDecorationTheme(
+            border: OutlineInputBorder(
+                borderSide: const BorderSide(color: Color(inputBorderColor), width: inputBorderWidth),
+                borderRadius: BorderRadius.circular(inputBorderRadius)),
+            enabledBorder: OutlineInputBorder(
+              borderSide: const BorderSide(color: Color(inputBorderColor), width: inputBorderWidth),
+              borderRadius: BorderRadius.circular(inputBorderRadius),
+            ),
             focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Color(inputBorderColorFocused), width: inputBorderWidth)),
-            labelStyle: TextStyle(
+                borderSide: const BorderSide(color: Color(inputBorderColorFocused), width: inputBorderWidth),
+                borderRadius: BorderRadius.circular(inputBorderRadius)),
+            labelStyle: const TextStyle(
               color: Colors.black,
               fontSize: defaultFontSize,
             ),
-            floatingLabelStyle: TextStyle(
+            floatingLabelStyle: const TextStyle(
               color: Colors.black,
               fontSize: defaultFontSize,
             )),
@@ -67,6 +74,8 @@ class MyApp extends StatelessWidget {
         '/explore': (context) => const ExplorePage(),
         '/newuser': (context) => const NewUserPage(),
         '/signin': (context) => const SignInFormsPage(),
+        '/messages': (context) => const MessagesPage(),
+        '/chat': (context) => const ChatPage(),
       },
       debugShowCheckedModeBanner: false,
     );

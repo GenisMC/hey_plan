@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hey_plan/Models/friend_model.dart';
 import 'package:hey_plan/Models/plan_model.dart';
 import 'package:hey_plan/Models/tag_model.dart';
 
@@ -11,19 +12,12 @@ class FireDB {
   /// Requires a [String] userUID, [String] desciption and [List] [String] Taglist.
   /// References the collection 'profiles' and inserts into the document where the
   /// [DocId] = [userUID], the description and tag reference list.
-  Future addProfileData(String surname, int age, String name, String userUid,
-      String desc, List<String> tags) async {
+  Future addProfileData(String surname, int age, String name, String userUid, String desc, List<String> tags) async {
     CollectionReference profiles = firestore.collection('profiles');
     try {
       await profiles
           .doc(userUid)
-          .set({
-            'name': name,
-            'surname': surname,
-            'age': age,
-            'desc': desc,
-            'tags': tags
-          })
+          .set({'name': name, 'surname': surname, 'age': age, 'desc': desc, 'tags': tags})
           .then((value) => print('User data added'))
           .catchError((error) => print('Error adding data: $error'));
     } on FirebaseException catch (e) {
@@ -40,9 +34,7 @@ class FireDB {
   Future addTagToProfile(String userUid, List<String> tags) async {
     CollectionReference profiles = firestore.collection('profiles');
     try {
-      return await profiles
-          .doc(userUid)
-          .update({'tags': FieldValue.arrayUnion(tags)});
+      return await profiles.doc(userUid).update({'tags': FieldValue.arrayUnion(tags)});
     } on FirebaseException catch (e) {
       print(e.code);
       return null;
@@ -57,9 +49,7 @@ class FireDB {
   Future removeTagsFromProfile(String userUid, List<String> tags) async {
     CollectionReference profiles = firestore.collection('profiles');
     try {
-      return await profiles
-          .doc(userUid)
-          .update({'tags': FieldValue.arrayRemove(tags)});
+      return await profiles.doc(userUid).update({'tags': FieldValue.arrayRemove(tags)});
     } on FirebaseException catch (e) {
       print(e.code);
       return null;
@@ -138,15 +128,8 @@ class FireDB {
   /// Requires a ``List<String>`` userUIDs, ``List<String`` photoURLs, ``DateTime`` date of the pla, ``bool`` private or public
   /// and TODO: add the rest of the fields like the location and the user list. After that it adds a new record with
   /// a random id to the collection.
-  Future createNewPlan(
-      String title,
-      String desc,
-      String docUid,
-      List<String> userUIDs,
-      DateTime date,
-      List<String> photoURLs,
-      List<String> tags,
-      bool private) async {
+  Future createNewPlan(String title, String desc, String docUid, List<String> userUIDs, DateTime date,
+      List<String> photoURLs, List<String> tags, bool private) async {
     CollectionReference plans = firestore.collection('plans');
 
     try {
@@ -172,11 +155,7 @@ class FireDB {
     List<PlanModel> planList = [];
 
     if (docUIDs.isNotEmpty) {
-      await plans
-          .where("__name__", whereNotIn: docUIDs)
-          .limit(10)
-          .get()
-          .then((plans) {
+      await plans.where("__name__", whereNotIn: docUIDs).limit(10).get().then((plans) {
         for (var planData in plans.docs) {
           planList.add(
             PlanModel(
@@ -193,11 +172,7 @@ class FireDB {
         }
       });
     } else {
-      await plans
-          .where("tags", arrayContainsAny: tagUIDs)
-          .limit(10)
-          .get()
-          .then((plans) {
+      await plans.where("tags", arrayContainsAny: tagUIDs).limit(10).get().then((plans) {
         for (var planData in plans.docs) {
           planList.add(
             PlanModel(
@@ -221,11 +196,7 @@ class FireDB {
   Future getUserPlans(String userUID) async {
     List<PlanModel> planList = [];
 
-    await firestore
-        .collection('plans')
-        .where("users", arrayContains: userUID)
-        .get()
-        .then((plans) {
+    await firestore.collection('plans').where("users", arrayContains: userUID).get().then((plans) {
       for (var planData in plans.docs) {
         planList.add(
           PlanModel(
@@ -278,5 +249,35 @@ class FireDB {
       return 1;
     }
     return 0;
+  }
+
+  Future addFriend(String userUID, String friendUID) async {
+    CollectionReference profiles = firestore.collection('profiles');
+  }
+
+  Future getFriendList(String userUID) async {
+    CollectionReference profiles = firestore.collection('profiles');
+    List<FriendModel> friendList = [];
+
+    try {
+      await profiles.doc(userUID).get().then((doc) async {
+        var data = doc.data() as Map<String, dynamic>;
+        List<dynamic> friends = data['friends'] ?? [];
+
+        if (friends.isNotEmpty) {
+          for (var friend in friends) {
+            await profiles.doc(friend).get().then((doc) {
+              var data = doc.data() as Map<String, dynamic>;
+              friendList.add(FriendModel(id: friend, name: data["name"] ?? "", avatar: friend));
+            });
+          }
+        }
+
+        return friendList;
+      });
+    } catch (e) {
+      print(e);
+    }
+    return friendList;
   }
 }

@@ -6,9 +6,10 @@ const int darkestBackroundAccent = 0xff6d9fa3;
 const int lighterBackgroundAccent = 0xffcce4e6;
 const int darkerAccentColor = 0xff70abaf;
 // Borders
-const int inputBorderColor = 0xffffffff;
+const int inputBorderColor = 0xff777777;
 const int inputBorderColorFocused = 0xff000000;
 const double inputBorderWidth = 2;
+const double inputBorderRadius = 10;
 // Buttons
 const int textButtonColor = 0xff785201;
 // Text

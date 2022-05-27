@@ -36,6 +36,13 @@ class _ScaffoldPageState extends State<ScaffoldPage> {
               Navigator.pushNamed(context, '/profile');
             }),
         title: singleton.auth.user == null ? Container() : Text(singleton.auth.user!.email!),
+        actions: [
+          IconButton(
+              icon: const Icon(Icons.send_rounded),
+              onPressed: () {
+                Navigator.pushNamed(context, '/messages');
+              }),
+        ],
       ),
       body: PageView(
         children: const [ExplorePage(), AddPlanPage(), PlansPage()],
