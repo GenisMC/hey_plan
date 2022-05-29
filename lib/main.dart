@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(backgroundColor),
         appBarTheme: const AppBarTheme(color: Color(accentColor)),
         bottomAppBarColor: const Color(darkerAccentColor),
-        hintColor: Colors.white,
+        hintColor: const Color(inputBorderColor),
         textSelectionTheme: const TextSelectionThemeData(cursorColor: Color(cursorColor)),
         textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(primary: const Color(textButtonColor))),
         elevatedButtonTheme:
@@ -75,7 +75,6 @@ class MyApp extends StatelessWidget {
         '/newuser': (context) => const NewUserPage(),
         '/signin': (context) => const SignInFormsPage(),
         '/messages': (context) => const MessagesPage(),
-        '/chat': (context) => const ChatPage(),
       },
       debugShowCheckedModeBanner: false,
     );

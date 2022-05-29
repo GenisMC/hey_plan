@@ -32,7 +32,7 @@ class _StartPageState extends State<StartPage> {
                     borderRadius: BorderRadius.all(Radius.circular(10)),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(15.0),
+                    padding: const EdgeInsets.all(25.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [

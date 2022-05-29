@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hey_plan/Globals/globals.dart';
 import 'package:hey_plan/Models/friend_model.dart';
+import 'package:hey_plan/Pages/chat.dart';
 import 'package:hey_plan/Services/singleton.dart';
 
 class MessagesPage extends StatefulWidget {
@@ -41,8 +42,18 @@ class _MessagesPageState extends State<MessagesPage> {
                     Icons.arrow_right_rounded,
                     size: 40,
                   ),
-                  onTap: () {
-                    Navigator.pushNamed(context, '/chat', arguments: friends[index]);
+                  onTap: () async {
+                    String chatID = await singleton.db.checkIfChatExists(singleton.auth.user!.uid, friends[index].id);
+                    print(chatID);
+                    if (chatID != "") {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ChatPage(
+                                    chatUID: chatID,
+                                    chatUsers: [singleton.auth.user!.uid, friends[index].id],
+                                  )));
+                    }
                   },
                   title: Padding(
                     padding: const EdgeInsets.fromLTRB(25.0, 0, 0, 0),
@@ -65,12 +76,64 @@ class _MessagesPageState extends State<MessagesPage> {
   }
 
   void showCustomDialog(BuildContext context) {
-    bool submitEnabled = true;
-
     final TextEditingController _uidController = TextEditingController();
 
     Future addFriend(String uid) async {
-      await singleton.db.addFriend(singleton.auth.user!.uid, uid);
+      var result = await singleton.db.addFriend(singleton.auth.user!.uid, uid);
+      if (result == 1) {
+        showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Hecho!'),
+                content: const Text('Usuario añadido como contacto'),
+                actions: [
+                  TextButton(
+                    child: const Text('Ok'),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              );
+            });
+      } else if (result == -1) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: const Text('El usuario no existe'),
+              actions: [
+                TextButton(
+                  child: const Text('Ok'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: const Text('El usuario ya esta en tu lista'),
+              actions: [
+                TextButton(
+                  child: const Text('Ok'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
     }
 
     showDialog(
@@ -90,7 +153,7 @@ class _MessagesPageState extends State<MessagesPage> {
                       const Padding(
                         padding: EdgeInsets.all(8),
                         child: Text("Agregar contacto",
-                            style: TextStyle(fontSize: defaultFontSize, fontWeight: FontWeight.bold)),
+                            style: TextStyle(fontSize: defaultFontSize * 1.1, fontWeight: FontWeight.bold)),
                       ),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
@@ -99,11 +162,11 @@ class _MessagesPageState extends State<MessagesPage> {
                           child: TextField(
                             controller: _uidController,
                             onSubmitted: (e) async {
-                              submitEnabled = false;
                               await addFriend(e);
-                              Navigator.pop(context);
                             },
                             decoration: InputDecoration(
+                              hintText: 'Id única',
+                              helperStyle: const TextStyle(fontSize: defaultFontSize * 0.9, color: Colors.black),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10.0),
                               ),
@@ -112,30 +175,19 @@ class _MessagesPageState extends State<MessagesPage> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-                        child: SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            child: submitEnabled
-                                ? ElevatedButton(
-                                    onPressed: (() async {
-                                      await addFriend(_uidController.text);
-                                      Navigator.pop(context);
-                                    }),
-                                    child: const Text("Aceptar"),
-                                    style: ElevatedButton.styleFrom(
-                                        primary: const Color(accentColor),
-                                        textStyle: const TextStyle(fontSize: defaultFontSize),
-                                        onPrimary: Colors.white),
-                                  )
-                                : ElevatedButton(
-                                    onPressed: null,
-                                    child: const Text("Aceptar"),
-                                    style: ElevatedButton.styleFrom(
-                                        primary: const Color(accentColor),
-                                        textStyle: const TextStyle(fontSize: defaultFontSize),
-                                        onPrimary: Colors.white),
-                                  )),
-                      )
+                          padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+                          child: SizedBox(
+                              width: MediaQuery.of(context).size.width,
+                              child: ElevatedButton(
+                                onPressed: (() async {
+                                  await addFriend(_uidController.text);
+                                }),
+                                child: const Text("Aceptar"),
+                                style: ElevatedButton.styleFrom(
+                                    primary: const Color(accentColor),
+                                    textStyle: const TextStyle(fontSize: defaultFontSize),
+                                    onPrimary: Colors.white),
+                              )))
                     ],
                   ),
                 ),

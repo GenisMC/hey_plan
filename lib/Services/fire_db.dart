@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hey_plan/Models/friend_model.dart';
 import 'package:hey_plan/Models/plan_model.dart';
@@ -253,6 +255,31 @@ class FireDB {
 
   Future addFriend(String userUID, String friendUID) async {
     CollectionReference profiles = firestore.collection('profiles');
+    if (friendUID != "") {
+      try {
+        //check if user already has friend
+        await profiles.doc(userUID).get().then((doc) {
+          if (doc.get('friends').contains(friendUID)) {
+            return 0;
+          }
+        });
+
+        // check if friend exists
+        profiles.doc(friendUID).get().then((doc) {
+          if (doc.exists) {
+            // add friend to user
+            profiles.doc(userUID).update({
+              'friends': FieldValue.arrayUnion([friendUID])
+            });
+            return 1;
+          }
+        });
+      } catch (e) {
+        print(e);
+        return -1;
+      }
+    }
+    return -1;
   }
 
   Future getFriendList(String userUID) async {
@@ -279,5 +306,52 @@ class FireDB {
       print(e);
     }
     return friendList;
+  }
+
+  Future<String> checkIfChatExists(String userUID, String friendUID) async {
+    CollectionReference chats = firestore.collection('chats');
+    String chatUID = "";
+    String chatUID2 = "";
+    bool chatAdmin = false;
+    try {
+      chatUID = sha256.convert(utf8.encode(userUID + friendUID)).toString();
+      chatUID2 = sha256.convert(utf8.encode(friendUID + userUID)).toString();
+      await chats.doc(chatUID).get().then((doc) {
+        if (!doc.exists) {
+          chats.doc(chatUID2).get().then((doc) {
+            if (!doc.exists) {
+              chats.doc(chatUID).set({
+                'users': [userUID, friendUID]
+              });
+            } else {
+              chatAdmin = false;
+            }
+          });
+        } else {
+          chatAdmin = true;
+        }
+      });
+    } catch (e) {
+      print(e);
+    }
+    return chatAdmin ? chatUID : chatUID2;
+  }
+
+  Future sendMessage(String chatUID, String userUID, String message) async {
+    CollectionReference chats = firestore.collection('chats');
+    try {
+      await chats.doc(chatUID).update({
+        'messages': FieldValue.arrayUnion([
+          {'user': userUID, 'message': message, 'date': DateTime.now()}
+        ])
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Stream<DocumentSnapshot> chatStream(String chatUID) {
+    final docRef = firestore.collection("chats").doc(chatUID);
+    return docRef.snapshots();
   }
 }

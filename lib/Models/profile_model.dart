@@ -15,5 +15,14 @@ class ProfileModel {
   String description;
   String? photoURL;
   List<TagModel> tags;
-  ProfileModel(this.uid,this.displayName,this.email,this.description,this.photoURL,this.tags);
+  ProfileModel(this.uid, this.displayName, this.email, this.description, this.photoURL, this.tags);
+
+  void fromJson(String uid, Map<String, dynamic> json) {
+    this.uid = uid;
+    displayName = json['name'] ?? "";
+    email = json['email'] ?? "";
+    description = json['desc'] ?? "";
+    photoURL = json['photoURL'] ?? "";
+    tags = [];
+  }
 }
