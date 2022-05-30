@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hey_plan/Globals/globals.dart';
-import 'package:hey_plan/Pages/chat.dart';
 import 'package:hey_plan/Pages/explore.dart';
 import 'package:hey_plan/Pages/messages.dart';
 import 'package:hey_plan/Pages/newuser.dart';

@@ -107,8 +107,8 @@ class _ProfilePageState extends State<ProfilePage> {
   void exitUser() async {
     // Logout through the singleton service function
     await singleton.auth.logout();
-    // TODO: pop until instead of push replacement ( Sometimes screen would blackout otherwise )
-    Navigator.pushReplacementNamed(context, '/');
+    //push and remove
+    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const StartPage()), (route) => false);
   }
 
   @override
@@ -318,8 +318,7 @@ class _ProfilePageState extends State<ProfilePage> {
         width: MediaQuery.of(context).size.width * 0.75,
         child: TextButton.icon(
             onPressed: () async {
-              await singleton.auth.logout();
-              Navigator.pushReplacementNamed(context, '/');
+              exitUser();
             },
             style: TextButton.styleFrom(
                 primary: Colors.black,

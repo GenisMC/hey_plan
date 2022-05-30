@@ -18,9 +18,6 @@ class ExplorePage extends StatefulWidget {
   State<ExplorePage> createState() => _ExplorePageState();
 }
 
-// TODO: LOAD 10 PLANS PLACE CURRENT IN MIDDLE THEN EVERY SWIPE
-//  DELETES ONE FROM EDGE ADDS ONE TO THE OTHER EDGE
-
 class _ExplorePageState extends State<ExplorePage> {
   final Singleton singleton = Singleton.instance;
   late MatchEngine _matchEngine;
@@ -33,8 +30,7 @@ class _ExplorePageState extends State<ExplorePage> {
     try {
       await checkCacheRefresh(prefs);
       var cache = prefs.getStringList("planCache");
-      List<String> tags =
-          await singleton.db.getUserTags(singleton.auth.user!.uid);
+      List<String> tags = await singleton.db.getUserTags(singleton.auth.user!.uid);
       planList = await singleton.db.getDiscoverPlanList(tags, cache ?? []);
       planTags = await singleton.db.getProfileTags(planList[index].tagUIDs);
       _matchEngine = MatchEngine(
@@ -62,8 +58,7 @@ class _ExplorePageState extends State<ExplorePage> {
     var lastRefresh = prefs.getString('refreshDate');
     if (lastRefresh != null) {
       var remainder = DateTime.parse(lastRefresh).difference(DateTime.now());
-      if ((const Duration(minutes: 1).inSeconds + remainder.inSeconds)
-          .isNegative) {
+      if ((const Duration(minutes: 1).inSeconds + remainder.inSeconds).isNegative) {
         await prefs.clear();
       }
     } else {
@@ -114,21 +109,14 @@ class _ExplorePageState extends State<ExplorePage> {
             print(snapshot.error);
             return const ErrorMessage();
           } else {
-            if (snapshot.data == null ||
-                snapshot.data! as List<PlanModel> == []) {
+            if (snapshot.data == null || snapshot.data! as List<PlanModel> == []) {
               return const EmptyMessage(
-                  message:
-                      'Parece que no podemos encontrar nada, prueba a cambiar tus preferencias.');
+                  message: 'Parece que no podemos encontrar nada, prueba a cambiar tus preferencias.');
             } else {
               DateTime fechaDT = planList[index].date;
-              String month = fechaDT.month < 10
-                  ? "0" + fechaDT.month.toString()
-                  : fechaDT.month.toString();
-              String minute = fechaDT.minute < 10
-                  ? "0" + fechaDT.minute.toString()
-                  : fechaDT.minute.toString();
-              String fecha =
-                  "${fechaDT.day}/$month/${fechaDT.year} - ${fechaDT.hour}:${minute}h";
+              String month = fechaDT.month < 10 ? "0" + fechaDT.month.toString() : fechaDT.month.toString();
+              String minute = fechaDT.minute < 10 ? "0" + fechaDT.minute.toString() : fechaDT.minute.toString();
+              String fecha = "${fechaDT.day}/$month/${fechaDT.year} - ${fechaDT.hour}:${minute}h";
               return SwipeCards(
                   matchEngine: _matchEngine,
                   onStackFinished: () {
@@ -151,9 +139,8 @@ class _ExplorePageState extends State<ExplorePage> {
                                   padding: const EdgeInsets.all(10.0),
                                   child: Text(
                                     planList[index].title,
-                                    style: const TextStyle(
-                                        fontSize: defaultFontSize * 1.3,
-                                        fontWeight: FontWeight.bold),
+                                    style:
+                                        const TextStyle(fontSize: defaultFontSize * 1.3, fontWeight: FontWeight.bold),
                                   ),
                                 ),
                                 Padding(
@@ -162,58 +149,37 @@ class _ExplorePageState extends State<ExplorePage> {
                                       alignment: Alignment.center,
                                       children: [
                                         CarouselSlider(
-                                            items: planList[index]
-                                                .photoURLs
-                                                .map((e) {
+                                            items: planList[index].photoURLs.map((e) {
                                               return Builder(
-                                                builder:
-                                                    (BuildContext context) {
+                                                builder: (BuildContext context) {
                                                   return GestureDetector(
                                                     child: SizedBox(
-                                                      height:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .height /
-                                                              3.3,
+                                                      height: MediaQuery.of(context).size.height / 3.3,
                                                       child: FittedBox(
                                                         fit: BoxFit.contain,
                                                         child: Container(
                                                             decoration: BoxDecoration(
-                                                                color: const Color(
-                                                                    inputBorderColor),
+                                                                color: const Color(inputBorderColor),
                                                                 borderRadius:
-                                                                    const BorderRadius
-                                                                            .all(
-                                                                        Radius.circular(
-                                                                            16)),
+                                                                    const BorderRadius.all(Radius.circular(16)),
                                                                 border: Border.all(
-                                                                    color: const Color(
-                                                                        darkestBackroundAccent),
+                                                                    color: const Color(darkestBackroundAccent),
                                                                     width: 5)),
-                                                            child: Image.network(
-                                                                e,
-                                                                fit: BoxFit
-                                                                    .cover)),
+                                                            child: Image.network(e, fit: BoxFit.cover)),
                                                       ),
                                                     ),
                                                   );
                                                 },
                                               );
                                             }).toList(),
-                                            options: CarouselOptions(
-                                                height: MediaQuery.of(context)
-                                                        .size
-                                                        .height /
-                                                    3.3)),
+                                            options: CarouselOptions(height: MediaQuery.of(context).size.height / 3.3)),
                                       ],
                                     )),
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(
                                     fecha,
-                                    style: const TextStyle(
-                                        fontSize: defaultFontSize,
-                                        fontWeight: FontWeight.bold),
+                                    style: const TextStyle(fontSize: defaultFontSize, fontWeight: FontWeight.bold),
                                   ),
                                 ),
                                 Padding(
@@ -231,36 +197,29 @@ class _ExplorePageState extends State<ExplorePage> {
                                           index: index,
                                           key: Key(index.toString()),
                                           title: tag.name,
-                                          textStyle: GoogleFonts.farro(
-                                              fontSize: defaultFontSize * 0.8),
+                                          textStyle: GoogleFonts.farro(fontSize: defaultFontSize * 0.8),
                                         );
                                       }
                                     },
                                   ),
                                 ),
                                 Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.8,
+                                  width: MediaQuery.of(context).size.width * 0.8,
                                   padding: const EdgeInsets.all(16),
                                   decoration: const BoxDecoration(
                                       color: Color(darkerBackgroundAccent),
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(16))),
+                                      borderRadius: BorderRadius.all(Radius.circular(16))),
                                   child: Text(
                                     planList[index].desc,
-                                    style: const TextStyle(
-                                        fontSize: defaultFontSize),
+                                    style: const TextStyle(fontSize: defaultFontSize),
                                   ),
                                 ),
                                 Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
                                   child: SizedBox(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.8,
+                                    width: MediaQuery.of(context).size.width * 0.8,
                                     child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         avatarWidget(),
                                         avatarWidget(),
@@ -271,8 +230,7 @@ class _ExplorePageState extends State<ExplorePage> {
                                   ),
                                 ),
                                 Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
                                   child: FloatingActionButton.extended(
                                     backgroundColor: const Color(accentColor),
                                     onPressed: () {},

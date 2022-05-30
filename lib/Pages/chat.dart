@@ -184,9 +184,9 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget circleAvatar(String userUID) {
-    return CircleAvatar(
-      backgroundImage: NetworkImage(getUserImage(userUID)),
-    );
+    return const CircleAvatar(
+        //backgroundImage: NetworkImage(getUserImage(userUID)),
+        );
   }
 
   Widget nameMessageColumn(bool isCurrentUser, String name, String? message) {
