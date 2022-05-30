@@ -113,6 +113,7 @@ class FireDB {
   /// Given a [String] userUID, gets the users description and tag reference
   /// list. In other words, all of the user information stored in the firestore
   /// database.
+  /// *returns* a [Map] of the user's data.
   Future getProfileData(String userUid) async {
     CollectionReference profiles = firestore.collection('profiles');
 

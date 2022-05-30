@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hey_plan/Globals/globals.dart';
 import 'package:hey_plan/Models/friend_model.dart';
+import 'package:hey_plan/Models/profile_model.dart';
 import 'package:hey_plan/Pages/chat.dart';
 import 'package:hey_plan/Services/singleton.dart';
 
@@ -13,6 +14,11 @@ class MessagesPage extends StatefulWidget {
 
 class _MessagesPageState extends State<MessagesPage> {
   final Singleton singleton = Singleton.instance;
+
+  Future getChatUsersProfile(String uid) async {
+    Map<String, dynamic> data = await singleton.db.getProfileData(uid) as Map<String, dynamic>;
+    return ProfileModel(uid, data['name'], "", data['desc'], data['photoURL'], []);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,14 +50,17 @@ class _MessagesPageState extends State<MessagesPage> {
                   ),
                   onTap: () async {
                     String chatID = await singleton.db.checkIfChatExists(singleton.auth.user!.uid, friends[index].id);
-                    print(chatID);
+                    List<ProfileModel> profiles = [];
+                    for (var user in [singleton.auth.user!.uid, friends[index].id]) {
+                      profiles.add(await getChatUsersProfile(user));
+                    }
                     if (chatID != "") {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => ChatPage(
                                     chatUID: chatID,
-                                    chatUsers: [singleton.auth.user!.uid, friends[index].id],
+                                    chatUsers: profiles,
                                   )));
                     }
                   },
@@ -60,7 +69,7 @@ class _MessagesPageState extends State<MessagesPage> {
                     child: Text(friends[index].name),
                   ),
                   leading: CircleAvatar(
-                    child: Text(friends[index].avatar),
+                    child: Container(),
                   ),
                 );
               },
