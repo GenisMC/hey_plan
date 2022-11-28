@@ -1,3 +1,3 @@
-# WADOYUDO
+# Heyplan
 
-## WhAt DO YoU DO
+## Check notion for current todos.
